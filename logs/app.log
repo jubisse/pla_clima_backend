@@ -1,0 +1,1077 @@
+11/11/2025, 15:20:46 | INFO | Verificando autenticação | {"service":"climate-adaptation-api","hasAuthHeader":true,"tokenLength":223,"path":"/","method":"GET"}
+11/11/2025, 15:20:46 | INFO | Usuário autenticado com sucesso | {"service":"climate-adaptation-api","userId":5,"email":"jane@demo.mz","perfil":"facilitador","path":"/"}
+11/11/2025, 15:20:46 | INFO | Iniciando listagem de sessões | {"service":"climate-adaptation-api","query":{"page":"1","limit":"100"},"userId":5,"userProfile":"facilitador"}
+11/11/2025, 15:20:46 | ERROR | Erro na query SQL Incorrect arguments to mysqld_stmt_execute | {"service":"climate-adaptation-api","query":"\n      SELECT s.*, u.nome as facilitador_nome,\n        (SELECT COUNT(*) FROM participantes_sessao WHERE sessao_id = s.id) as total_participantes\n      FROM sessions s\n      LEFT JOIN usuarios u ON s.facilitador_id = u.id\n      WHERE 1=1\n     ORDER BY s.data DESC, s.horario DESC LIMIT ? OFFSET ?","params":[100,0]}
+11/11/2025, 15:20:46 | ERROR | Erro ao listar sessões
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at executeQuery (C:\wamp64\www\pla_clima\backend\config\database.js:51:38)
+    at Object.execute (C:\wamp64\www\pla_clima\backend\config\database.js:65:18)
+    at C:\wamp64\www\pla_clima\backend\routes\sessions.js:58:32
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:69:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","query":{"page":"1","limit":"100"},"userId":5}
+11/11/2025, 15:20:46 | INFO | Verificando autenticação | {"service":"climate-adaptation-api","hasAuthHeader":true,"tokenLength":223,"path":"/","method":"GET"}
+11/11/2025, 15:20:46 | INFO | Usuário autenticado com sucesso | {"service":"climate-adaptation-api","userId":5,"email":"jane@demo.mz","perfil":"facilitador","path":"/"}
+11/11/2025, 15:20:46 | INFO | Iniciando listagem de sessões | {"service":"climate-adaptation-api","query":{"page":"1","limit":"100"},"userId":5,"userProfile":"facilitador"}
+11/11/2025, 15:20:46 | ERROR | Erro na query SQL Incorrect arguments to mysqld_stmt_execute | {"service":"climate-adaptation-api","query":"\n      SELECT s.*, u.nome as facilitador_nome,\n        (SELECT COUNT(*) FROM participantes_sessao WHERE sessao_id = s.id) as total_participantes\n      FROM sessions s\n      LEFT JOIN usuarios u ON s.facilitador_id = u.id\n      WHERE 1=1\n     ORDER BY s.data DESC, s.horario DESC LIMIT ? OFFSET ?","params":[100,0]}
+11/11/2025, 15:20:46 | ERROR | Erro ao listar sessões
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at executeQuery (C:\wamp64\www\pla_clima\backend\config\database.js:51:38)
+    at Object.execute (C:\wamp64\www\pla_clima\backend\config\database.js:65:18)
+    at C:\wamp64\www\pla_clima\backend\routes\sessions.js:58:32
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:69:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","query":{"page":"1","limit":"100"},"userId":5}
+11/11/2025, 16:51:07 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:34:42
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:9:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) as total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:51:07 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:34:42
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:9:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) as total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:05 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:05 | ERROR | 💥 Erro ao listar sessões Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:05 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:05 | ERROR | 💥 Erro ao listar sessões Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:38 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:38 | ERROR | 💥 Erro ao listar sessões Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:38 | ERROR | Erro na operação de BD Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+11/11/2025, 16:56:38 | ERROR | 💥 Erro ao listar sessões Incorrect arguments to mysqld_stmt_execute
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\connection.js:47:22)
+    at C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:37:39
+    at withConnection (C:\wamp64\www\pla_clima\backend\utils\database.js:9:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async list (C:\wamp64\www\pla_clima\backend\controllers\SessionController.js:11:5) | {"service":"climate-adaptation-api","code":"ER_WRONG_ARGUMENTS","errno":1210,"sql":"\n          SELECT \n            s.*,\n            u.nome AS facilitador_nome,\n            (SELECT COUNT(*) FROM participantes_sessao ps WHERE ps.sessao_id = s.id) AS total_participantes\n          FROM sessions s\n          LEFT JOIN usuarios u ON s.facilitador_id = u.id\n          \n          ORDER BY s.data DESC, s.created_at DESC\n          LIMIT ? OFFSET ?\n        ","sqlState":"HY000","sqlMessage":"Incorrect arguments to mysqld_stmt_execute"}
+12/11/2025, 12:35:46 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 12:35:46 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 12:35:46 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 12:35:46 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 12:36:32 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 12:36:32 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 12:36:33 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 12:36:33 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 12:36:33 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 12:36:33 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 12:36:33 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 12:36:33 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 12:47:20 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 12:47:20 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 12:47:20 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 12:47:20 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 12:47:20 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 12:47:21 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 12:47:21 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 12:47:21 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 13:03:32 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 13:03:32 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 13:03:32 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 13:03:33 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 13:03:33 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 13:03:33 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 13:03:33 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 13:03:33 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 13:52:05 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 13:52:05 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 13:52:05 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 13:52:05 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 13:52:05 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 13:52:05 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 13:52:05 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 13:52:05 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:27:21 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:27:21 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:27:21 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:27:21 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:27:21 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:27:21 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:27:21 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:27:21 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:27:26 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:27:26 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:27:26 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:27:26 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:27:26 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:27:26 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:27:26 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:27:26 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:28:37 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:28:37 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:28:37 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:28:37 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:28:37 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:28:37 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:28:37 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:28:37 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:29:56 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:29:56 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:29:56 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:29:56 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:30:09 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:30:09 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:30:09 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:30:09 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:30:09 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:30:09 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:30:09 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:30:09 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:30:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:30:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:30:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:30:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:30:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:30:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:30:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:30:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:32:53 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:32:53 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:32:53 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:32:53 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:33:56 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:33:56 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:33:56 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:33:56 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:34:18 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:34:18 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:34:18 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:34:18 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:34:38 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:34:38 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:34:38 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:34:38 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:34:38 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:34:38 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:34:38 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:34:38 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:34:50 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:34:50 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:34:50 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:34:50 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:34:50 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:34:50 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:34:50 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:34:51 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:45:32 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:45:32 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:45:32 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:45:32 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:45:46 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:45:46 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:45:46 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:45:46 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:46:19 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:46:19 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:46:19 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:46:19 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:46:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:46:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:46:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:46:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:47:10 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:47:10 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:47:10 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:47:10 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:47:10 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:47:10 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:47:10 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:47:10 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:48:17 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:48:17 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:48:17 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:48:17 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:48:17 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:48:17 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:48:17 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:48:17 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:48:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:48:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:48:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:48:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:48:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:48:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:48:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:48:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:48:46 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:48:46 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:48:46 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:48:46 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:49:20 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:49:20 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:49:20 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:49:20 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:50:15 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:50:15 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:50:15 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:50:15 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:51:53 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:51:53 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:51:53 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:51:53 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:51:53 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:51:53 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:51:53 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:51:53 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:52:20 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:52:20 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:52:20 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:52:20 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:52:50 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:52:50 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:52:50 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:52:50 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 14:52:50 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 14:52:50 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 14:52:50 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 14:52:50 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 17:16:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 17:16:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 17:16:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 17:16:25 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 17:16:25 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 17:16:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 17:16:25 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 17:16:25 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 17:40:38 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 17:40:38 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 17:40:38 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 17:40:38 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+12/11/2025, 17:40:38 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+12/11/2025, 17:40:38 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+12/11/2025, 17:40:38 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+12/11/2025, 17:40:38 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+01/12/2025, 18:57:47 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+01/12/2025, 18:57:47 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+01/12/2025, 18:57:47 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+01/12/2025, 18:57:47 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+01/12/2025, 18:57:47 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+01/12/2025, 18:57:47 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+01/12/2025, 18:57:47 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+01/12/2025, 18:57:47 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+01/12/2025, 19:11:15 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+01/12/2025, 19:11:15 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+01/12/2025, 19:11:15 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+01/12/2025, 19:11:15 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+01/12/2025, 19:11:15 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+01/12/2025, 19:11:15 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+01/12/2025, 19:11:15 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+01/12/2025, 19:11:15 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:19:29 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:19:29 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:19:29 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:19:29 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:19:29 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:19:29 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:19:29 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:19:29 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:19:52 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:19:52 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:19:52 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:19:52 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:19:52 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:19:52 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:19:52 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:19:52 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:31:02 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:31:02 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:31:02 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:31:02 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:31:02 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:31:02 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:31:02 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:31:02 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:34:03 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:34:03 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:34:03 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:34:03 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:34:03 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:34:03 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:34:03 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:34:03 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:40:21 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:40:21 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:40:21 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:40:21 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:40:22 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:40:22 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:40:22 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:40:22 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:42:42 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:42:42 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:42:42 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:42:42 | INFO | Carregando atividades recentes | {"service":"climate-adaptation-api","userId":5,"scope":"facilitador","limit":"8"}
+02/12/2025, 18:42:42 | ERROR | Erro ao carregar atividades recentes
+📍 Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute (C:\wamp64\www\pla_clima\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\wamp64\www\pla_clima\backend\routes\dashboard.js:168:42
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\route.js:149:13)
+    at C:\wamp64\www\pla_clima\backend\middleware\auth.js:78:5
+    at C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:261:12
+    at getSecret (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\wamp64\www\pla_clima\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at authenticateToken (C:\wamp64\www\pla_clima\backend\middleware\auth.js:57:7)
+    at Layer.handle [as handle_request] (C:\wamp64\www\pla_clima\backend\node_modules\express\lib\router\layer.js:95:5) | {"service":"climate-adaptation-api","error":"Incorrect arguments to mysqld_stmt_execute","userId":5}
+02/12/2025, 18:42:42 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
+02/12/2025, 18:42:42 | INFO | Carregando dashboard do facilitador | {"service":"climate-adaptation-api","userId":5,"userProfile":"facilitador"}
+02/12/2025, 18:42:42 | INFO | Estatísticas do facilitador calculadas | {"service":"climate-adaptation-api","userId":5,"stats":{"sessoesAtivas":4,"totalParticipantes":"495","participantesHoje":0,"taxaParticipacao":76,"sessoesConcluidasMes":0,"sessoesAgendadas":13,"atividadesClassificadas":1,"votosRecebidos":0,"engajamentoMedio":76,"tempoMedioSessao":"2.5"}}
