@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { createUploadDirs } = require('./config/upload');
+const db = require('./config/database');
 
 // SIMPLE LOGGERS
 const requestLogger = (req, res, next) => {
@@ -15,6 +16,47 @@ const errorLogger = (err, req, res, next) => {
   console.error(`💥 ERRO em ${req.method} ${req.url}:`, err.message);
   next(err);
 };
+
+// ===================== ROTAS DE DEBUG =====================
+// Adicione APÓS a importação do 'db'
+
+app.get('/api/debug/test-db', async (req, res) => {
+  try {
+    console.log('🔍 Testando conexão com MySQL...');
+    const [result] = await db.execute('SELECT 1 as test'); // ← db.execute, não db.query
+    res.json({ 
+      success: true, 
+      message: 'Conexão com MySQL OK',
+      data: result
+    });
+  } catch (error) {
+    console.error('❌ Erro na conexão MySQL:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    console.log('🔍 Buscando usuários no banco...');
+    const [users] = await db.execute('SELECT id, nome, email, perfil FROM usuarios');
+    res.json({ 
+      success: true, 
+      count: users.length,
+      users 
+    });
+  } catch (error) {
+    console.error('❌ Erro ao buscar usuários:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      query: 'SELECT id, nome, email, perfil FROM usuarios'
+    });
+  }
+});
 
 // IMPORT ROUTES
 const authRoutes = require('./routes/auth');
@@ -71,41 +113,6 @@ app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
 }));
-
-// Adicione após as outras rotas, mas antes do error handling
-app.get('/api/debug/test-db', async (req, res) => {
-  try {
-    const [result] = await db.query('SELECT 1 as test');
-    res.json({ 
-      success: true, 
-      message: 'Conexão com MySQL OK',
-      data: result
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
-  }
-});
-
-app.get('/api/debug/users', async (req, res) => {
-  try {
-    const [users] = await db.query('SELECT id, nome, email, perfil FROM usuarios');
-    res.json({ 
-      success: true, 
-      count: users.length,
-      users 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      query: 'SELECT id, nome, email, perfil FROM usuarios'
-    });
-  }
-});
 
 // ===================== ROTAS =====================
 app.use('/api/auth', authRoutes);
