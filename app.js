@@ -18,9 +18,8 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
-      'http://localhost:3000',
-      'https://pla-clima-backend.onrender.com',
-      'https://pla-clima.onrender.com'
+      'https://climatica.sotservice.co.mz',
+      'https://pla-clima-backend.onrender.com'
     ].filter(Boolean);
 
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -346,8 +345,8 @@ app.use((error, req, res, next) => {
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`🌍 Ambiente: ${NODE_ENV}`);
-  console.log(`🔗 URL: http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔗 URL: https://pla-clima-backend.onrender.com:${PORT}`);
+  console.log(`📊 Health check: https://pla-clima-backend.onrender.com:${PORT}/api/health`);
 });
 
 // Graceful shutdown
