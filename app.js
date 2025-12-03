@@ -17,6 +17,20 @@ const errorLogger = (err, req, res, next) => {
   next(err);
 };
 
+// IMPORT ROUTES
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const usuarioRoutes = require('./routes/usuario');
+const sessionsRoutes = require('./routes/sessions');
+const votingRoutes = require('./routes/voting');
+const learningRoutes = require('./routes/learning');
+const adminRoutes = require('./routes/admin');
+const dashboardRoutes = require('./routes/dashboard');
+
+// ===================== EXPRESS APP =====================
+const app = express();
+const PORT = process.env.PORT || 5000;
+
 // ===================== ROTAS DE DEBUG =====================
 // Adicione APÓS a importação do 'db'
 
@@ -58,19 +72,6 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
-// IMPORT ROUTES
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const usuarioRoutes = require('./routes/usuario');
-const sessionsRoutes = require('./routes/sessions');
-const votingRoutes = require('./routes/voting');
-const learningRoutes = require('./routes/learning');
-const adminRoutes = require('./routes/admin');
-const dashboardRoutes = require('./routes/dashboard');
-
-// ===================== EXPRESS APP =====================
-const app = express();
-const PORT = process.env.PORT || 5000;
 
 // 🔥 ESTE COMANDO TEM QUE VIR DEPOIS DE app CRIADO!
 app.set("trust proxy", 1);
