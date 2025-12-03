@@ -39,7 +39,12 @@ app.set("trust proxy", 1);
     console.log('🚀 Iniciando configurações iniciais...');
 
     await createUploadDirs();
+   if (process.env.NODE_ENV !== "production") {
     await require('./scripts/initDatabaseSimple')();
+} else {
+    console.log("⚠️ Ignorado initDatabase no ambiente de produção.");
+}
+
 
     console.log('✅ Configurações iniciais concluídas!');
   } catch (error) {
