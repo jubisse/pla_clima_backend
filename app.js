@@ -342,11 +342,11 @@ app.use((error, req, res, next) => {
 });
 
 // ===================== INICIAR SERVIDOR =====================
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`🌍 Ambiente: ${NODE_ENV}`);
-  console.log(`🔗 URL: https://pla-clima-backend.onrender.com:${PORT}`);
-  console.log(`📊 Health check: https://pla-clima-backend.onrender.com:${PORT}/api/health`);
+  console.log(`🔗 URL: https://pla-clima-backend.onrender.com`);
+  console.log(`📊 Health check: https://pla-clima-backend.onrender.com/api/health`);
 });
 
 // Graceful shutdown
