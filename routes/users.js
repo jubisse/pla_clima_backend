@@ -1,272 +1,215 @@
-// backend/routes/users.js - VERSÃO CORRIGIDA
 const express = require('express');
-const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 
-// ✅ IMPORTAR CORRETAMENTE - separar USER_ROLES das funções
-const { 
-  authenticateToken, 
-  requireRole, 
-  requireOwnershipOrRole 
-} = require('../middleware/auth');
-const { USER_ROLES } = require('../middleware/auth'); // ✅ Importar USER_ROLES separadamente
+const router = express.Router();
 
-// ✅ IMPORTAR LOGGER CORRETAMENTE
-const logger = require('../middleware/logger');
+/* ======================================================
+    LOGGING SIMPLES E ROBUSTO
+====================================================== */
+const log = {
+    info: (msg) => console.log(`ℹ️ USERS: ${msg}`),
+    error: (msg, err) => {
+        console.error(`❌ USERS ERROR: ${msg}`);
+        if (err) console.error("   Detalhes:", err.message);
+    },
+    warn: (msg) => console.log(`⚠️ USERS: ${msg}`)
+};
 
-// Obter perfil do usuário atual
-router.get('/profile', authenticateToken, async (req, res) => {
-  try {
-    logger.info('Obtendo perfil do usuário', { userId: req.user.id });
+/* ======================================================
+    MIDDLEWARE DE AUTENTICAÇÃO JWT
+====================================================== */
+const authRequired = (req, res, next) => {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token)
+        return res.status(401).json({ error: 'Token não fornecido' });
 
-    const [users] = await db.execute(
-      'SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito, created_at FROM usuarios WHERE id = ?',
-      [req.user.id]
-    );
-
-    if (users.length === 0) {
-      logger.warn('Usuário não encontrado ao buscar perfil', { userId: req.user.id });
-      return res.status(404).json({
-        success: false,
-        message: 'Usuário não encontrado'
-      });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // id, email, perfil, nome
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Token inválido' });
     }
+};
 
-    logger.info('Perfil obtido com sucesso', { userId: req.user.id });
-    
-    res.json({
-      success: true,
-      data: users[0]
-    });
+/* ======================================================
+    1️⃣ REGISTRO
+====================================================== */
+router.post('/registro', async (req, res) => {
+    try {
+        const { nome, email, password, telefone, perfil } = req.body;
 
-  } catch (error) {
-    logger.error('Erro ao obter perfil', {
-      error: error.message,
-      userId: req.user?.id
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-  }
+        if (!nome || !email || !password)
+            return res.status(400).json({ error: "Campos obrigatórios faltando" });
+
+        // Verificar se email já existe
+        const [exist] = await db.execute(
+            "SELECT id FROM usuarios WHERE email = ?",
+            [email]
+        );
+
+        if (exist.length > 0)
+            return res.status(409).json({ error: "Email já registrado" });
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        const query = `
+            INSERT INTO usuarios (nome, email, senha_hash, telefone, perfil)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        await db.execute(query, [nome, email, hashed, telefone, perfil || "usuario"]);
+
+        res.json({
+            success: true,
+            message: "Usuário registrado com sucesso"
+        });
+
+    } catch (err) {
+        log.error("Erro ao registrar usuário", err);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
 });
 
-// Atualizar perfil do usuário atual
-router.put('/profile', authenticateToken, async (req, res) => {
-  try {
-    const { nome, telefone, organizacao, provincia, distrito } = req.body;
+/* ======================================================
+    2️⃣ LOGIN
+====================================================== */
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    logger.info('Atualizando perfil do usuário', {
-      userId: req.user.id,
-      campos: { nome: !!nome, telefone: !!telefone, organizacao: !!organizacao }
-    });
+        const [rows] = await db.execute(
+            "SELECT * FROM usuarios WHERE email = ?",
+            [email]
+        );
 
-    await db.execute(
-      'UPDATE usuarios SET nome = ?, telefone = ?, organizacao = ?, provincia = ?, distrito = ? WHERE id = ?',
-      [nome, telefone, organizacao, provincia, distrito, req.user.id]
-    );
+        if (rows.length === 0)
+            return res.status(401).json({ error: "Credenciais inválidas" });
 
-    logger.info('Perfil atualizado com sucesso', { userId: req.user.id });
+        const user = rows[0];
 
-    res.json({
-      success: true,
-      message: 'Perfil atualizado com sucesso'
-    });
+        const valid = await bcrypt.compare(password, user.senha_hash);
+        if (!valid)
+            return res.status(401).json({ error: "Credenciais inválidas" });
 
-  } catch (error) {
-    logger.error('Erro ao atualizar perfil', {
-      error: error.message,
-      userId: req.user?.id
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-  }
+        const token = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                perfil: user.perfil,
+                nome: user.nome
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "24h" }
+        );
+
+        delete user.senha_hash;
+
+        res.json({ success: true, token, user });
+
+    } catch (err) {
+        log.error("Erro no login", err);
+        res.status(500).json({ error: "Erro interno" });
+    }
 });
 
-// Listar todos os usuários (apenas admin)
-router.get('/', authenticateToken, requireRole([USER_ROLES.ADMIN]), async (req, res) => {
-  try {
-    const { page = 1, limit = 10, perfil } = req.query;
-    const offset = (page - 1) * limit;
+/* ======================================================
+    3️⃣ VERIFICAR TOKEN
+====================================================== */
+router.get('/verify', authRequired, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            "SELECT id, nome, email, perfil, telefone FROM usuarios WHERE id = ?",
+            [req.user.id]
+        );
 
-    logger.info('Listando usuários (admin)', {
-      adminId: req.user.id,
-      filters: { perfil, page, limit }
-    });
+        if (rows.length === 0)
+            return res.status(404).json({ error: "Usuário não encontrado" });
 
-    let query = `
-      SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito, created_at 
-      FROM usuarios 
-      WHERE 1=1
-    `;
-    let params = [];
+        res.json({ valid: true, user: rows[0] });
 
-    if (perfil) {
-      query += ' AND perfil = ?';
-      params.push(perfil);
+    } catch (err) {
+        log.error("Erro ao verificar token", err);
+        res.status(500).json({ error: "Erro interno" });
     }
-
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
-
-    const [users] = await db.execute(query, params);
-
-    // Contar total
-    let countQuery = 'SELECT COUNT(*) as total FROM usuarios WHERE 1=1';
-    let countParams = [];
-
-    if (perfil) {
-      countQuery += ' AND perfil = ?';
-      countParams.push(perfil);
-    }
-
-    const [totalResult] = await db.execute(countQuery, countParams);
-    const total = totalResult[0].total;
-
-    logger.info('Listagem de usuários concluída', {
-      totalUsuarios: total,
-      usuariosRetornados: users.length,
-      adminId: req.user.id
-    });
-
-    res.json({
-      success: true,
-      data: users,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
-
-  } catch (error) {
-    logger.error('Erro ao listar usuários', {
-      error: error.message,
-      adminId: req.user?.id
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-  }
 });
 
-// Obter usuário específico (admin ou o próprio usuário)
-router.get('/:userId', authenticateToken, requireOwnershipOrRole([USER_ROLES.ADMIN]), async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    logger.info('Obtendo usuário específico', {
-      requestedBy: req.user.id,
-      targetUserId: userId
-    });
-
-    const [users] = await db.execute(
-      'SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito, created_at FROM usuarios WHERE id = ?',
-      [userId]
-    );
-
-    if (users.length === 0) {
-      logger.warn('Usuário não encontrado', { userId });
-      return res.status(404).json({
-        success: false,
-        message: 'Usuário não encontrado'
-      });
-    }
-
-    logger.info('Usuário encontrado', { userId });
-
-    res.json({
-      success: true,
-      data: users[0]
-    });
-
-  } catch (error) {
-    logger.error('Erro ao obter usuário', {
-      error: error.message,
-      userId: req.params.userId,
-      requestedBy: req.user?.id
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-  }
+/* ======================================================
+    4️⃣ LOGOUT (stateless)
+====================================================== */
+router.post('/logout', (_req, res) => {
+    res.json({ success: true, message: "Logout efetuado" });
 });
 
-// Atualizar usuário (admin ou o próprio usuário)
-router.put('/:userId', authenticateToken, requireOwnershipOrRole([USER_ROLES.ADMIN]), async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { nome, telefone, organizacao, provincia, distrito, perfil } = req.body;
-
-    logger.info('Atualizando usuário', {
-      updatedBy: req.user.id,
-      targetUserId: userId,
-      camposAtualizados: Object.keys(req.body).filter(key => req.body[key] !== undefined)
-    });
-
-    // Verificar se é admin para permitir atualização de perfil
-    const canUpdatePerfil = req.user.perfil === USER_ROLES.ADMIN;
-    const updates = { nome, telefone, organizacao, provincia, distrito };
-    
-    if (canUpdatePerfil && perfil) {
-      updates.perfil = perfil;
+/* ======================================================
+    5️⃣ LISTAR TODOS USUÁRIOS
+====================================================== */
+router.get('/', authRequired, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            "SELECT id, nome, email, perfil, telefone FROM usuarios ORDER BY id DESC"
+        );
+        res.json(rows);
+    } catch (err) {
+        log.error("Erro ao listar usuários", err);
+        res.status(500).json({ error: "Erro interno" });
     }
-
-    const setClause = Object.keys(updates)
-      .filter(key => updates[key] !== undefined)
-      .map(key => `${key} = ?`)
-      .join(', ');
-
-    const values = Object.keys(updates)
-      .filter(key => updates[key] !== undefined)
-      .map(key => updates[key]);
-
-    if (values.length === 0) {
-      logger.warn('Nenhum campo válido para atualizar', { userId });
-      return res.status(400).json({
-        success: false,
-        message: 'Nenhum campo válido para atualizar'
-      });
-    }
-
-    values.push(userId);
-
-    await db.execute(
-      `UPDATE usuarios SET ${setClause} WHERE id = ?`,
-      values
-    );
-
-    logger.info('Usuário atualizado com sucesso', {
-      updatedBy: req.user.id,
-      targetUserId: userId
-    });
-
-    res.json({
-      success: true,
-      message: 'Usuário atualizado com sucesso'
-    });
-
-  } catch (error) {
-    logger.error('Erro ao atualizar usuário', {
-      error: error.message,
-      targetUserId: req.params.userId,
-      updatedBy: req.user?.id
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-  }
 });
+
+/* ======================================================
+    6️⃣ OBTER USUÁRIO POR ID
+====================================================== */
+router.get('/:id', authRequired, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            "SELECT id, nome, email, perfil, telefone FROM usuarios WHERE id = ?",
+            [req.params.id]
+        );
+
+        if (rows.length === 0)
+            return res.status(404).json({ error: "Usuário não encontrado" });
+
+        res.json(rows[0]);
+
+    } catch (err) {
+        log.error("Erro ao buscar usuário", err);
+        res.status(500).json({ error: "Erro interno" });
+    }
+});
+
+/* ======================================================
+    7️⃣ ATUALIZAR USUÁRIO
+====================================================== */
+router.put('/:id', authRequired, async (req, res) => {
+    try {
+        const { nome, telefone, perfil } = req.body;
+
+        await db.execute(
+            "UPDATE usuarios SET nome=?, telefone=?, perfil=? WHERE id=?",
+            [nome, telefone, perfil, req.params.id]
+        );
+
+        res.json({ success: true, message: "Atualizado com sucesso" });
+
+    } catch (err) {
+        log.error("Erro ao atualizar usuário", err);
+        res.status(500).json({ error: "Erro interno" });
+    }
+});
+
+/* ======================================================
+    8️⃣ APAGAR USUÁRIO
+====================================================== */
+router.delete('/:id', authRequired, async (req, res) => {
+    try {
+        await db.execute("DELETE FROM usuarios WHERE id = ?", [req.params.id]);
+        res.json({ success: true, message: "Usuário removido" });
+    } catch (err) {
+        log.error("Erro ao remover usuário", err);
+        res.status(500).json({ error: "Erro interno" });
+    }
+});
+
 
 module.exports = router;
