@@ -2,12 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-console.log("🔎 DB_HOST =", process.env.DB_HOST);
-console.log("🔎 DB_USER =", process.env.DB_USER);
-console.log("🔎 DB_NAME =", process.env.DB_NAME);
-console.log("🔎 NODE_ENV =", process.env.NODE_ENV);
-
-
 const { createUploadDirs } = require('./config/upload');
 
 // SIMPLE LOGGERS
@@ -77,6 +71,41 @@ app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
 }));
+
+// Adicione após as outras rotas, mas antes do error handling
+app.get('/api/debug/test-db', async (req, res) => {
+  try {
+    const [result] = await db.query('SELECT 1 as test');
+    res.json({ 
+      success: true, 
+      message: 'Conexão com MySQL OK',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    const [users] = await db.query('SELECT id, nome, email, perfil FROM usuarios');
+    res.json({ 
+      success: true, 
+      count: users.length,
+      users 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      query: 'SELECT id, nome, email, perfil FROM usuarios'
+    });
+  }
+});
 
 // ===================== ROTAS =====================
 app.use('/api/auth', authRoutes);
