@@ -149,6 +149,85 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
   }
 });
 
+// Dashboard do participante
+router.get('/participante', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    console.log(`📊 Carregando dashboard do participante ${userId}`);
+    
+    // Buscar estatísticas
+    const [stats] = await db.execute(`
+      SELECT 
+        COUNT(DISTINCT ps.sessao_id) as sessoes_inscritas,
+        COUNT(DISTINCT CASE WHEN s.estado = 'concluida' THEN s.id END) as sessoes_concluidas,
+        COUNT(DISTINCT v.id) as votacoes_participadas,
+        COUNT(DISTINCT CASE WHEN l.completado = 1 THEN l.id END) as modulos_concluidos
+      FROM usuarios u
+      LEFT JOIN participantes_sessao ps ON u.id = ps.usuario_id
+      LEFT JOIN sessoes s ON ps.sessao_id = s.id
+      LEFT JOIN votos v ON u.id = v.usuario_id
+      LEFT JOIN learning_progress l ON u.id = l.usuario_id
+      WHERE u.id = ?
+    `, [userId]);
+    
+    // Buscar próximas sessões
+    const [proximasSessoes] = await db.execute(`
+      SELECT 
+        s.*,
+        u.nome as facilitador_nome
+      FROM sessoes s
+      INNER JOIN participantes_sessao ps ON s.id = ps.sessao_id
+      LEFT JOIN usuarios u ON s.facilitador_id = u.id
+      WHERE ps.usuario_id = ? 
+        AND (s.data > CURDATE() OR (s.data = CURDATE() AND s.horario > CURTIME()))
+        AND s.estado IN ('agendada', 'em_curso')
+      ORDER BY s.data ASC, s.horario ASC
+      LIMIT 5
+    `, [userId]);
+    
+    // Buscar progresso de aprendizado
+    const [progresso] = await db.execute(`
+      SELECT 
+        COUNT(*) as total_modulos,
+        SUM(CASE WHEN completado = 1 THEN 1 ELSE 0 END) as modulos_concluidos,
+        CASE 
+          WHEN COUNT(*) > 0 THEN ROUND((SUM(CASE WHEN completado = 1 THEN 1 ELSE 0 END) / COUNT(*)) * 100, 0)
+          ELSE 0 
+        END as progresso_percentual
+      FROM learning_modules
+      LEFT JOIN learning_progress ON learning_modules.id = learning_progress.modulo_id 
+        AND learning_progress.usuario_id = ?
+    `, [userId]);
+    
+    res.json({
+      success: true,
+      dashboard: {
+        estatisticas: stats[0] || {
+          sessoes_inscritas: 0,
+          sessoes_concluidas: 0,
+          votacoes_participadas: 0,
+          modulos_concluidos: 0
+        },
+        proximasSessoes: proximasSessoes || [],
+        progressoAprendizado: progresso[0] || {
+          total_modulos: 0,
+          modulos_concluidos: 0,
+          progresso_percentual: 0
+        },
+        atividadesRecentes: [] // Será preenchido pelo frontend
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao carregar dashboard do participante:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao carregar dashboard'
+    });
+  }
+});
+
 // ✅ ATIVIDADES RECENTES
 router.get('/atividades-recentes', authenticateToken, async (req, res) => {
   try {

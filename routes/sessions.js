@@ -647,6 +647,49 @@ router.get('/health/check', authenticateToken, async (req, res) => {
 
 // ✅ ROTAS DE PARTICIPANTES - ADICIONAR NO FINAL DO ARQUIVO sessions.js
 
+// Rota para obter sessões do participante atual
+router.get('/participante', authMiddleware, async (req, res) => {
+  try {
+    console.log('👤 Buscando sessões do participante:', req.user.id);
+    
+    // Buscar sessões em que o usuário está inscrito
+    const [sessoes] = await db.execute(`
+      SELECT 
+        s.*,
+        u.nome as facilitador_nome,
+        ps.status as status_inscricao,
+        ps.data_inscricao
+      FROM sessoes s
+      LEFT JOIN usuarios u ON s.facilitador_id = u.id
+      LEFT JOIN participantes_sessao ps ON s.id = ps.sessao_id AND ps.usuario_id = ?
+      WHERE ps.usuario_id = ? OR s.facilitador_id = ?
+      ORDER BY s.data DESC, s.horario DESC
+    `, [req.user.id, req.user.id, req.user.id]);
+    
+    // Se não houver sessões, retornar array vazio
+    if (!sessoes || sessoes.length === 0) {
+      return res.json({
+        success: true,
+        sessoes: [],
+        message: 'Nenhuma sessão encontrada'
+      });
+    }
+    
+    res.json({
+      success: true,
+      sessoes: sessoes,
+      count: sessoes.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar sessões do participante:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao buscar sessões'
+    });
+  }
+});
+
 // ✅ LISTAR PARTICIPANTES DE UMA SESSÃO - ROTA CORRIGIDA
 router.get('/:id/participantes', authenticateToken, async (req, res) => {
   try {

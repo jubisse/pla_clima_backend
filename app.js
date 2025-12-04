@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { createUploadDirs } = require('./config/upload');
+const authMiddleware = require('./middleware/authMiddleware');
 
 // ===================== CONFIGURAÇÃO DE BANCO =====================
 let db;
@@ -318,6 +319,7 @@ app.post('/api/debug/check-password', async (req, res) => {
 });
 
 // ===================== IMPORTAR ROTAS PRINCIPAIS =====================
+const activitiesRoutes = require('./routes/activities');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const usuarioRoutes = require('./routes/usuario');
@@ -336,6 +338,7 @@ app.use('/api/votacao', votingRoutes);
 app.use('/api/learning', learningRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api', activitiesRoutes);
 
 // ===================== ROTAS DE SISTEMA =====================
 
