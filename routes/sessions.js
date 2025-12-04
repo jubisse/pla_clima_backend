@@ -1022,137 +1022,97 @@ router.delete('/:sessaoId/participantes/:usuarioId', authenticateToken, async (r
   }
 });
 
-// ✅ ADICIONAR PARTICIPANTE À SESSÃO - NOVA ROTA
+// ✅ ADICIONAR PARTICIPANTE À SESSÃO - ROTA COMPLETADA
 router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
-  try {
-    const { sessaoId } = req.params;
-    const { usuario_id, status = 'pendente' } = req.body;
+  try {
+    const { sessaoId } = req.params;
+    const { usuario_id, status = 'pendente' } = req.body;
 
-    logger.info('Adicionando participante à sessão', {
-      sessionId: sessaoId,
-      userId: usuario_id,
-      status: status,
-      requestedBy: req.user.id
-    });
+    logger.info('Adicionando participante à sessão', {
+      sessionId: sessaoId,
+      userId: usuario_id,
+      status: status,
+      requestedBy: req.user.id
+    });
 
-    // ✅ VALIDAÇÕES
-    const sessaoIdNum = parseInt(sessaoId);
-    const usuarioIdNum = parseInt(usuario_id);
+    // ✅ VALIDAÇÕES
+    const sessaoIdNum = parseInt(sessaoId);
+    const usuarioIdNum = parseInt(usuario_id);
 
-    if (isNaN(sessaoIdNum) || isNaN(usuarioIdNum)) {
-      return res.status(400).json({
-        success: false,
-        message: 'IDs inválidos'
-      });
-    }
+    if (isNaN(sessaoIdNum) || isNaN(usuarioIdNum)) {
+      return res.status(400).json({
+        success: false,
+        message: 'IDs inválidos. Ambos sessaoId e usuario_id devem ser números'
+      });
+    }
 
-    const statusValidos = ['pendente', 'confirmado', 'cancelado'];
-    if (!statusValidos.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Status inválido. Use: pendente, confirmado ou cancelado'
-      });
-    }
+    const statusValidos = ['pendente', 'confirmado', 'cancelado'];
+    const finalStatus = statusValidos.includes(status) ? status : 'pendente';
 
-    // ✅ VERIFICAR SE A SESSÃO EXISTE
-    const [sessoes] = await db.query('SELECT id FROM sessions WHERE id = ?', [sessaoIdNum]);
-    if (!Array.isArray(sessoes) || sessoes.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Sessão não encontrada'
-      });
-    }
+    // 1. VERIFICAR DUPLICIDADE
+    const [existing] = await db.query(
+      'SELECT status FROM participantes_sessao WHERE sessao_id = ? AND usuario_id = ?',
+      [sessaoIdNum, usuarioIdNum]
+    );
 
-    // ✅ VERIFICAR SE O USUÁRIO EXISTE
-    const [usuarios] = await db.query('SELECT id FROM usuarios WHERE id = ?', [usuarioIdNum]);
-    if (!Array.isArray(usuarios) || usuarios.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuário não encontrado'
-      });
-    }
+    if (Array.isArray(existing) && existing.length > 0) {
+      logger.warn('Tentativa de adicionar participante duplicado', {
+        sessionId: sessaoIdNum,
+        userId: usuarioIdNum,
+        currentStatus: existing[0].status
+      });
+      return res.status(409).json({
+        success: false,
+        message: `Participante já está inscrito nesta sessão com status: ${existing[0].status}`
+      });
+    }
 
-    // ✅ VERIFICAR SE JÁ É PARTICIPANTE
-    const [existentes] = await db.query(
-      'SELECT id FROM participantes_sessao WHERE sessao_id = ? AND usuario_id = ?',
-      [sessaoIdNum, usuarioIdNum]
-    );
+    // 2. INSERÇÃO
+    const insertQuery = `
+      INSERT INTO participantes_sessao (sessao_id, usuario_id, status, data_inscricao, created_at) 
+      VALUES (?, ?, ?, NOW(), NOW())
+    `;
+    
+    const [result] = await db.query(insertQuery, [sessaoIdNum, usuarioIdNum, finalStatus]);
 
-    if (Array.isArray(existentes) && existentes.length > 0) {
-      return res.status(409).json({
-        success: false,
-        message: 'Usuário já é participante desta sessão'
-      });
-    }
+    logger.info('Participante adicionado com sucesso', {
+      sessionId: sessaoIdNum,
+      userId: usuarioIdNum,
+      insertId: result?.insertId
+    });
 
-    // ✅ INSERIR NOVO PARTICIPANTE
-    const query = `
-      INSERT INTO participantes_sessao (sessao_id, usuario_id, status, data_inscricao, created_at) 
-      VALUES (?, ?, ?, NOW(), NOW())
-    `;
+    res.status(201).json({
+      success: true,
+      message: `Participante adicionado à sessão com status: ${finalStatus}`,
+      data: {
+        id_registro: result?.insertId,
+        sessao_id: sessaoIdNum,
+        usuario_id: usuarioIdNum,
+        status: finalStatus
+      }
+    });
 
-    const [result] = await db.query(query, [sessaoIdNum, usuarioIdNum, status]);
+  } catch (error) {
+    logger.error('Erro ao adicionar participante', {
+      error: error.message,
+      sessionId: req.params.sessaoId,
+      userId: req.body.usuario_id,
+      requestedBy: req.user?.id
+    });
 
-    logger.info('Participante adicionado com sucesso', {
-      sessionId: sessaoIdNum,
-      userId: usuarioIdNum,
-      status: status,
-      insertId: result.insertId
-    });
+    // TRATAMENTO ESPECÍFICO PARA FOREIGN KEY (SESSÃO OU USUÁRIO INEXISTENTE)
+    if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.code === 'ER_NO_REFERENCED_ROW') {
+      return res.status(404).json({
+        success: false,
+        message: 'Sessão ou usuário não encontrado(a). Verifique os IDs fornecidos.'
+      });
+    }
 
-    // ✅ BUSCAR DADOS COMPLETOS DO PARTICIPANTE
-    const [participantes] = await db.query(
-      `SELECT 
-        ps.*,
-        u.nome, u.email, u.telefone, u.organizacao, u.provincia, u.distrito
-       FROM participantes_sessao ps
-       LEFT JOIN usuarios u ON ps.usuario_id = u.id
-       WHERE ps.id = ?`,
-      [result.insertId]
-    );
-
-    const participante = participantes && participantes[0] ? {
-      id: participantes[0].id,
-      sessao_id: participantes[0].sessao_id,
-      usuario_id: participantes[0].usuario_id,
-      status: participantes[0].status,
-      data_inscricao: participantes[0].data_inscricao,
-      usuario: {
-        id: participantes[0].usuario_id,
-        nome: participantes[0].nome,
-        email: participantes[0].email,
-        telefone: participantes[0].telefone,
-        organizacao: participantes[0].organizacao,
-        provincia: participantes[0].provincia,
-        distrito: participantes[0].distrito
-      },
-      progresso: {
-        treinamento: 0,
-        teste_realizado: false,
-        teste_aprovado: false,
-        votacao_concluida: false
-      }
-    } : null;
-
-    res.status(201).json({
-      success: true,
-      message: 'Participante adicionado à sessão com sucesso',
-      data: participante
-    });
-
-  } catch (error) {
-    logger.error('Erro ao adicionar participante', {
-      error: error.message,
-      sessionId: req.params.sessaoId,
-      userId: req.body.usuario_id,
-      requestedBy: req.user?.id
-    });
-
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor ao adicionar participante'
-    });
-  }
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro interno do servidor ao adicionar participante'
+    });
+  }
 });
 
 module.exports = router;
