@@ -343,7 +343,7 @@ app.use((error, req, res, next) => {
 });
 
 // ===================== INICIAR SERVIDOR =====================
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`🌍 Ambiente: ${NODE_ENV}`);
   console.log(`🔗 URL: https://pla-clima-backend.onrender.com`);
