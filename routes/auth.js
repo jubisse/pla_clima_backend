@@ -1,13 +1,13 @@
-// routes/auth.js - VERSÃO SUPER ROBUSTA PARA POSTGRES
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Carregar a conexão PostgreSQL
+// Carregar a conexão MySQL
 let db;
 try {
+  // ATENÇÃO: Verifique se o módulo database.js está usando o mysql2
   db = require('../config/database');
-  console.log('✅ PostgreSQL conectado nas rotas de auth');
+  console.log('✅ MySQL conectado nas rotas de auth');
 } catch (dbError) {
   console.error('❌ ERRO CRÍTICO: Não foi possível carregar o módulo database:', dbError.message);
   db = {
@@ -27,8 +27,8 @@ const authLogger = {
   error: (msg, error = null, context = {}) => {
     console.error(`❌ AUTH ERROR: ${msg}`);
     if (error) {
-      console.error('   📍 Stack:', error.stack);
-      console.error('   🔧 Context:', context);
+      console.error('   📍 Stack:', error.stack);
+      console.error('   🔧 Context:', context);
     }
   },
   debug: (msg, data = {}) => {
@@ -56,21 +56,27 @@ const validateLoginFields = (req, res, next) => {
   next();
 };
 
-// ===================== DB SAFE QUERY PARA POSTGRES =====================
+// ===================== DB SAFE QUERY PARA MYSQL =====================
 const safeDbQuery = async (query, params = [], operation = 'query') => {
   try {
     authLogger.debug(`Executando query [${operation}]`, { query, params });
 
+    // O driver 'mysql2' (em modo prepared statements) retorna [results, fields]
+    // A maioria das operações de SELECT retorna a lista de linhas no primeiro elemento.
     const result = await db.query(query, params);
 
-    return result.rows || [];
+    // Adaptação: Se db.query retorna um array [rows, fields], retornamos rows.
+    if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+        return result[0]; // rows
+    }
+    // Caso contrário, retorna o que for que o driver retorne (ou array vazio se for nulo)
+    return result || [];
+
   } catch (err) {
     authLogger.error(`Erro na query [${operation}]`, err, { query, params });
 
-    // Traduções úteis
-    if (err.code === '28P01') throw new Error('Credenciais inválidas do banco');
-    if (err.code === 'ECONNREFUSED') throw new Error('Banco indisponível');
-
+    // Tratamentos de erro específicos do MySQL podem ser adicionados aqui (ex: ER_BAD_FIELD_ERROR)
+    
     throw err;
   }
 };
@@ -97,13 +103,13 @@ router.post('/login', logAuthRequest, validateLoginFields, async (req, res) => {
   const sanitizedEmail = email.trim().toLowerCase();
 
   try {
-    // Buscar usuário no PostgreSQL
+    // Buscar usuário no MySQL (Placeholder '?' no lugar de '$1')
     const users = await safeDbQuery(`
       SELECT 
         id, nome, email, senha_hash AS senha,
         perfil, telefone, organizacao, provincia, distrito, created_at
       FROM usuarios
-      WHERE email = $1
+      WHERE email = ? 
       LIMIT 1
     `, [sanitizedEmail], 'buscar-usuario');
 
@@ -161,9 +167,10 @@ router.get('/verify', async (req, res) => {
       process.env.JWT_SECRET || 'fallback-secret-key-change-in-production'
     );
 
+    // Placeholder '?' no lugar de '$1'
     const users = await safeDbQuery(
       `SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito 
-       FROM usuarios WHERE id = $1`,
+       FROM usuarios WHERE id = ?`,
       [decoded.id],
       'verificar-usuario'
     );
@@ -209,4 +216,4 @@ if (process.env.NODE_ENV !== "production") {
 // ===================== EXPORTAÇÃO =====================
 module.exports = router;
 
-authLogger.info("Rotas de autenticação carregadas (PostgreSQL)");
+authLogger.info("Rotas de autenticação carregadas (MySQL)");

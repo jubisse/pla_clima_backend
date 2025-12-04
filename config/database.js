@@ -1,4 +1,3 @@
-// config/database.js - VERSÃO MYSQL CORRIGIDA
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
@@ -31,12 +30,13 @@ const pool = mysql.createPool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Função para executar queries (compatibilidade)
-const execute = async (sql, params = []) => {
+// Função para executar queries (usando execute para prepared statements e retornando SÓ as linhas)
+const query = async (sql, params = []) => {
   try {
     console.log(`📝 Executando query MySQL: ${sql.substring(0, 100)}...`);
-    const [rows, fields] = await pool.execute(sql, params);
-    return [rows];
+    // Usamos pool.execute, que é mais seguro (prepared statements)
+    const [rows] = await pool.execute(sql, params);
+    return rows; // Retorna apenas as linhas para simplificar a aplicação
   } catch (error) {
     console.error('❌ Erro na query MySQL:', {
       message: error.message,
@@ -70,13 +70,11 @@ const execute = async (sql, params = []) => {
   }
 })();
 
-// Exportar módulo com método execute
+// Exportar módulo com método query (padronizado)
 module.exports = {
-  execute,
-  query: (sql, params) => pool.query(sql, params),
+  query, // Agora retorna apenas as linhas
   getConnection: () => pool.getConnection(),
   pool,
-  
   // Métodos adicionais para compatibilidade
   end: (callback) => pool.end(callback)
 };
