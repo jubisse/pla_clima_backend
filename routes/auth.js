@@ -38,36 +38,18 @@ const authLogger = {
   }
 };
 
-// ===================== MIDDLEWARES =====================
-const logAuthRequest = (req, res, next) => {
-  authLogger.info("Tentativa de autenticação", {
-    ip: req.headers['x-forwarded-for'] || req.ip,
-    email: req.body.email || "não fornecido"
-  });
-  next();
-};
-
-const validateLoginFields = (req, res, next) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    authLogger.warn("Campos ausentes");
-    return res.status(400).json({ success: false, error: "Email e senha são obrigatórios" });
-  }
-  next();
-};
-
 // ===================== DB SAFE QUERY PARA MYSQL =====================
 const safeDbQuery = async (query, params = [], operation = 'query') => {
   try {
     authLogger.debug(`Executando query [${operation}]`, { query, params });
 
-    // O driver 'mysql2' (em modo prepared statements) retorna [results, fields]
-    // A maioria das operações de SELECT retorna a lista de linhas no primeiro elemento.
+    // Se o database.js foi corrigido para retornar apenas rows (como sugerido), 
+    // a adaptação abaixo é desnecessária, mas a manteremos como fallback de segurança.
     const result = await db.query(query, params);
 
     // Adaptação: Se db.query retorna um array [rows, fields], retornamos rows.
     if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
-        return result[0]; // rows
+      return result[0]; // rows
     }
     // Caso contrário, retorna o que for que o driver retorne (ou array vazio se for nulo)
     return result || [];
@@ -76,7 +58,7 @@ const safeDbQuery = async (query, params = [], operation = 'query') => {
     authLogger.error(`Erro na query [${operation}]`, err, { query, params });
 
     // Tratamentos de erro específicos do MySQL podem ser adicionados aqui (ex: ER_BAD_FIELD_ERROR)
-    
+
     throw err;
   }
 };
@@ -97,13 +79,122 @@ const generateToken = (user) => {
   );
 };
 
+// ===================== MIDDLEWARES =====================
+const logAuthRequest = (req, res, next) => {
+  authLogger.info("Tentativa de autenticação", {
+    ip: req.headers['x-forwarded-for'] || req.ip,
+    email: req.body.email || "não fornecido"
+  });
+  next();
+};
+
+const validateLoginFields = (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    authLogger.warn("Campos ausentes");
+    return res.status(400).json({ success: false, error: "Email e senha são obrigatórios" });
+  }
+  next();
+};
+
+// Middleware para validar campos de REGISTRO
+const validateRegistrationFields = (req, res, next) => {
+  const { nome, email, senha, organizacao, perfil } = req.body;
+  if (!nome || !email || !senha || !organizacao) {
+    authLogger.warn("Campos obrigatórios de registro ausentes");
+    return res.status(400).json({ success: false, error: "Nome, Email, Senha e Organização são obrigatórios" });
+  }
+  
+  // Define perfil padrão se não for fornecido
+  req.body.perfil = perfil || 'participante'; 
+
+  next();
+};
+
+// ===================== POST /registro (ROTA EM FALTA) =====================
+router.post('/registro', logAuthRequest, validateRegistrationFields, async (req, res) => {
+  const { nome, email, senha, telefone, organizacao, provincia, distrito, perfil } = req.body;
+  const sanitizedEmail = email.trim().toLowerCase();
+
+  try {
+    // 1. Verificar se o usuário já existe
+    const existingUsers = await safeDbQuery(`
+      SELECT id FROM usuarios WHERE email = ? LIMIT 1
+    `, [sanitizedEmail], 'verificar-email');
+
+    if (existingUsers.length) {
+      authLogger.warn("Tentativa de registro com email duplicado", { email });
+      return res.status(409).json({ success: false, error: "Este email já está registrado" });
+    }
+
+    // 2. Hash da senha
+    const senha_hash = await bcrypt.hash(senha, 12);
+    
+    // 3. Inserir novo usuário
+    const result = await safeDbQuery(`
+      INSERT INTO usuarios 
+        (nome, email, senha_hash, perfil, telefone, organizacao, provincia, distrito)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      nome, 
+      sanitizedEmail, 
+      senha_hash, 
+      perfil, // Usa 'participante' se não definido (ver middleware)
+      telefone, 
+      organizacao, 
+      provincia, 
+      distrito
+    ], 'criar-usuario');
+    
+    // O MySQL retorna um objeto com insertId para inserts.
+    const newUserId = result.insertId;
+
+    authLogger.info("Novo usuário registrado com sucesso", { id: newUserId, email });
+
+    // 4. Buscar o usuário recém-criado para gerar o token e a resposta
+    const users = await safeDbQuery(`
+      SELECT 
+        id, nome, email, perfil, telefone, organizacao, provincia, distrito, created_at
+      FROM usuarios
+      WHERE id = ? 
+      LIMIT 1
+    `, [newUserId], 'buscar-novo-usuario');
+    
+    const user = users[0];
+
+    // 5. Gerar token
+    const token = generateToken(user);
+
+    // 6. Resposta (Status 201 - Created)
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        perfil: user.perfil,
+        telefone: user.telefone,
+        organizacao: user.organizacao,
+        provincia: user.provincia,
+        distrito: user.distrito,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (err) {
+    authLogger.error("Erro inesperado no registro", err);
+    res.status(500).json({ success: false, error: "Erro interno" });
+  }
+});
+
 // ===================== POST /login =====================
 router.post('/login', logAuthRequest, validateLoginFields, async (req, res) => {
   const { email, password } = req.body;
   const sanitizedEmail = email.trim().toLowerCase();
 
   try {
-    // Buscar usuário no MySQL (Placeholder '?' no lugar de '$1')
+    // Buscar usuário no MySQL (Placeholder '?' )
     const users = await safeDbQuery(`
       SELECT 
         id, nome, email, senha_hash AS senha,
@@ -115,6 +206,7 @@ router.post('/login', logAuthRequest, validateLoginFields, async (req, res) => {
 
     if (!users.length) {
       authLogger.warn("Usuário não encontrado");
+      // Previne timing attacks
       await bcrypt.compare("dummy", "$2a$12$invalidinvalidinvalidinvalidinvalidinv");
       return res.status(401).json({ success: false, error: "Credenciais inválidas" });
     }
@@ -167,7 +259,7 @@ router.get('/verify', async (req, res) => {
       process.env.JWT_SECRET || 'fallback-secret-key-change-in-production'
     );
 
-    // Placeholder '?' no lugar de '$1'
+    // Placeholder '?' 
     const users = await safeDbQuery(
       `SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito 
        FROM usuarios WHERE id = ?`,
