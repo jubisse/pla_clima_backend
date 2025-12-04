@@ -45,7 +45,7 @@ router.post('/registro', async (req, res) => {
             return res.status(400).json({ error: "Campos obrigatórios faltando" });
 
         // Verificar se email já existe
-        const [exist] = await db.execute(
+        const [exist] = await db.query(
             "SELECT id FROM usuarios WHERE email = ?",
             [email]
         );
@@ -59,7 +59,7 @@ router.post('/registro', async (req, res) => {
             INSERT INTO usuarios (nome, email, senha_hash, telefone, perfil)
             VALUES (?, ?, ?, ?, ?)
         `;
-        await db.execute(query, [nome, email, hashed, telefone, perfil || "usuario"]);
+        await db.query(query, [nome, email, hashed, telefone, perfil || "usuario"]);
 
         res.json({
             success: true,
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const [rows] = await db.execute(
+        const [rows] = await db.query(
             "SELECT * FROM usuarios WHERE email = ?",
             [email]
         );
@@ -119,7 +119,7 @@ router.post('/login', async (req, res) => {
 ====================================================== */
 router.get('/verify', authRequired, async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const [rows] = await db.query(
             "SELECT id, nome, email, perfil, telefone FROM usuarios WHERE id = ?",
             [req.user.id]
         );
@@ -147,7 +147,7 @@ router.post('/logout', (_req, res) => {
 ====================================================== */
 router.get('/', authRequired, async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const [rows] = await db.query(
             "SELECT id, nome, email, perfil, telefone FROM usuarios ORDER BY id DESC"
         );
         res.json(rows);
@@ -162,7 +162,7 @@ router.get('/', authRequired, async (req, res) => {
 ====================================================== */
 router.get('/:id', authRequired, async (req, res) => {
     try {
-        const [rows] = await db.execute(
+        const [rows] = await db.query(
             "SELECT id, nome, email, perfil, telefone FROM usuarios WHERE id = ?",
             [req.params.id]
         );
@@ -185,7 +185,7 @@ router.put('/:id', authRequired, async (req, res) => {
     try {
         const { nome, telefone, perfil } = req.body;
 
-        await db.execute(
+        await db.query(
             "UPDATE usuarios SET nome=?, telefone=?, perfil=? WHERE id=?",
             [nome, telefone, perfil, req.params.id]
         );
@@ -203,7 +203,7 @@ router.put('/:id', authRequired, async (req, res) => {
 ====================================================== */
 router.delete('/:id', authRequired, async (req, res) => {
     try {
-        await db.execute("DELETE FROM usuarios WHERE id = ?", [req.params.id]);
+        await db.query("DELETE FROM usuarios WHERE id = ?", [req.params.id]);
         res.json({ success: true, message: "Usuário removido" });
     } catch (err) {
         log.error("Erro ao remover usuário", err);

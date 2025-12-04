@@ -8,7 +8,7 @@ router.get('/atividades', authenticateToken, async (req, res) => {
   try {
     const { sessao_id = 1 } = req.query;
 
-    const [atividades] = await db.execute(`
+    const [atividades] = await db.query(`
       SELECT * FROM atividades_classificadas 
       WHERE sessao_id = ? 
       ORDER BY prioridade DESC, atividade ASC
@@ -43,7 +43,7 @@ router.post('/votar', authenticateToken, async (req, res) => {
     const usuario_id = req.user.id;
 
     // Verificar se o usuário já votou
-    const [votacaoExistente] = await db.execute(
+    const [votacaoExistente] = await db.query(
       'SELECT * FROM usuario_votacao_status WHERE usuario_id = ? AND sessao_id = ?',
       [usuario_id, sessao_id]
     );
@@ -56,25 +56,25 @@ router.post('/votar', authenticateToken, async (req, res) => {
     }
 
     // Iniciar transação
-    await db.execute('START TRANSACTION');
+    await db.query('START TRANSACTION');
 
     try {
       // Inserir/atualizar votos
       for (const voto of votos) {
-        const [votoExistente] = await db.execute(
+        const [votoExistente] = await db.query(
           'SELECT * FROM votos_usuario WHERE usuario_id = ? AND atividade_id = ? AND sessao_id = ?',
           [usuario_id, voto.atividade_id, sessao_id]
         );
 
         if (votoExistente.length > 0) {
           // Atualizar voto existente
-          await db.execute(
+          await db.query(
             'UPDATE votos_usuario SET pontuacao = ?, prioridade_usuario = ?, comentario = ?, updated_at = CURRENT_TIMESTAMP WHERE usuario_id = ? AND atividade_id = ? AND sessao_id = ?',
             [voto.pontuacao, voto.prioridade_usuario, voto.comentario, usuario_id, voto.atividade_id, sessao_id]
           );
         } else {
           // Inserir novo voto
-          await db.execute(
+          await db.query(
             'INSERT INTO votos_usuario (usuario_id, atividade_id, sessao_id, pontuacao, prioridade_usuario, comentario) VALUES (?, ?, ?, ?, ?, ?)',
             [usuario_id, voto.atividade_id, sessao_id, voto.pontuacao, voto.prioridade_usuario, voto.comentario]
           );
@@ -83,18 +83,18 @@ router.post('/votar', authenticateToken, async (req, res) => {
 
       // Atualizar status da votação
       if (votacaoExistente.length > 0) {
-        await db.execute(
+        await db.query(
           'UPDATE usuario_votacao_status SET votacao_concluida = 1, data_conclusao = CURRENT_TIMESTAMP WHERE usuario_id = ? AND sessao_id = ?',
           [usuario_id, sessao_id]
         );
       } else {
-        await db.execute(
+        await db.query(
           'INSERT INTO usuario_votacao_status (usuario_id, sessao_id, votacao_concluida, data_conclusao) VALUES (?, ?, 1, CURRENT_TIMESTAMP)',
           [usuario_id, sessao_id]
         );
       }
 
-      await db.execute('COMMIT');
+      await db.query('COMMIT');
 
       res.json({
         success: true,
@@ -102,7 +102,7 @@ router.post('/votar', authenticateToken, async (req, res) => {
       });
 
     } catch (error) {
-      await db.execute('ROLLBACK');
+      await db.query('ROLLBACK');
       throw error;
     }
 
@@ -120,7 +120,7 @@ router.get('/resultados', authenticateToken, async (req, res) => {
   try {
     const { sessao_id = 1 } = req.query;
 
-    const [resultados] = await db.execute(`
+    const [resultados] = await db.query(`
       SELECT 
         ac.id as atividade_id,
         ac.atividade,
@@ -167,7 +167,7 @@ router.get('/status', authenticateToken, async (req, res) => {
     const { sessao_id = 1 } = req.query;
     const usuario_id = req.user.id;
 
-    const [status] = await db.execute(
+    const [status] = await db.query(
       'SELECT * FROM usuario_votacao_status WHERE usuario_id = ? AND sessao_id = ?',
       [usuario_id, sessao_id]
     );

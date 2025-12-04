@@ -8,7 +8,7 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const usuario_id = req.user.id;
 
-    const [notificacoes] = await db.execute(`
+    const [notificacoes] = await db.query(`
       SELECT * FROM notificacoes 
       WHERE usuario_id = ? 
       ORDER BY created_at DESC
@@ -36,7 +36,7 @@ router.put('/:notificacaoId/ler', authenticateToken, async (req, res) => {
     const usuario_id = req.user.id;
 
     // Verificar se a notificação pertence ao usuário
-    const [notificacao] = await db.execute(
+    const [notificacao] = await db.query(
       'SELECT * FROM notificacoes WHERE id = ? AND usuario_id = ?',
       [notificacaoId, usuario_id]
     );
@@ -48,7 +48,7 @@ router.put('/:notificacaoId/ler', authenticateToken, async (req, res) => {
       });
     }
 
-    await db.execute(
+    await db.query(
       'UPDATE notificacoes SET lida = 1 WHERE id = ?',
       [notificacaoId]
     );
@@ -72,7 +72,7 @@ router.put('/ler-todas', authenticateToken, async (req, res) => {
   try {
     const usuario_id = req.user.id;
 
-    await db.execute(
+    await db.query(
       'UPDATE notificacoes SET lida = 1 WHERE usuario_id = ? AND lida = 0',
       [usuario_id]
     );
@@ -95,7 +95,7 @@ router.put('/ler-todas', authenticateToken, async (req, res) => {
 router.get('/contador', authenticateToken, async (req, res) => {
   try {
     const usuario_id = req.user.id;
-    const [rows] = await db.execute(
+    const [rows] = await db.query(
       'SELECT COUNT(*) as contador FROM notificacoes WHERE usuario_id = ? AND lida = 0',
       [usuario_id]
     );
@@ -119,7 +119,7 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    await db.execute(
+    await db.query(
       'INSERT INTO notificacoes (usuario_id, titulo, mensagem, tipo, link) VALUES (?, ?, ?, ?, ?)',
       [usuario_id, titulo, mensagem, tipo, link]
     );

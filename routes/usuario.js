@@ -39,7 +39,7 @@ router.get('/status', authenticateToken, async (req, res) => {
     // ✅ BUSCAR DADOS BÁSICOS DO USUÁRIO DE FORMA SEGURA
     let usuario = null;
     try {
-      const [users] = await db.execute(
+      const [users] = await db.query(
         `SELECT 
           id, nome, email, perfil, telefone, organizacao, 
           provincia, distrito, created_at 
@@ -83,13 +83,13 @@ router.get('/status', authenticateToken, async (req, res) => {
       logger.debug('Verificando tabela modulos_aprendizagem...');
       
       // Primeiro verificar se a tabela existe
-      const [tableCheck] = await db.execute(
+      const [tableCheck] = await db.query(
         "SHOW TABLES LIKE 'modulos_aprendizagem'"
       );
       
       if (tableCheck.length > 0) {
         // Tabela existe, contar módulos
-        const [modulosCount] = await db.execute(
+        const [modulosCount] = await db.query(
           'SELECT COUNT(*) as total FROM modulos_aprendizagem'
         );
         
@@ -116,12 +116,12 @@ router.get('/status', authenticateToken, async (req, res) => {
     try {
       logger.debug('Verificando progresso de aprendizagem...');
       
-      const [tableCheck] = await db.execute(
+      const [tableCheck] = await db.query(
         "SHOW TABLES LIKE 'progresso_aprendizagem'"
       );
       
       if (tableCheck.length > 0) {
-        const [modulosConcluidos] = await db.execute(
+        const [modulosConcluidos] = await db.query(
           'SELECT COUNT(*) as total FROM progresso_aprendizagem WHERE usuario_id = ? AND concluido = 1',
           [req.user.id]
         );
@@ -151,12 +151,12 @@ router.get('/status', authenticateToken, async (req, res) => {
     try {
       logger.debug('Verificando resultados de teste...');
       
-      const [tableCheck] = await db.execute(
+      const [tableCheck] = await db.query(
         "SHOW TABLES LIKE 'resultados_teste'"
       );
       
       if (tableCheck.length > 0) {
-        const [testeResult] = await db.execute(
+        const [testeResult] = await db.query(
           'SELECT COUNT(*) as total FROM resultados_teste WHERE usuario_id = ? AND aprovado = 1',
           [req.user.id]
         );
@@ -184,12 +184,12 @@ router.get('/status', authenticateToken, async (req, res) => {
     try {
       logger.debug('Verificando status de votação...');
       
-      const [tableCheck] = await db.execute(
+      const [tableCheck] = await db.query(
         "SHOW TABLES LIKE 'usuario_votacao_status'"
       );
       
       if (tableCheck.length > 0) {
-        const [votacaoResult] = await db.execute(
+        const [votacaoResult] = await db.query(
           'SELECT COUNT(*) as total FROM usuario_votacao_status WHERE usuario_id = ? AND votacao_concluida = 1',
           [req.user.id]
         );
@@ -320,7 +320,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
   try {
     logger.info('Obtendo perfil do usuário', { userId: req.user.id });
 
-    const [users] = await db.execute(
+    const [users] = await db.query(
       `SELECT 
         id, nome, email, perfil, telefone, organizacao, 
         provincia, distrito, created_at 
@@ -364,7 +364,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
       camposAtualizados: Object.keys(req.body).filter(key => req.body[key])
     });
 
-    await db.execute(
+    await db.query(
       `UPDATE usuarios 
        SET nome = ?, telefone = ?, organizacao = ?, provincia = ?, distrito = ?, updated_at = NOW() 
        WHERE id = ?`,

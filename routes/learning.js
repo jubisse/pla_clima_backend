@@ -6,7 +6,7 @@ const { authenticateToken } = require('../middleware/auth');
 // Listar módulos de aprendizagem
 router.get('/modulos', authenticateToken, async (req, res) => {
   try {
-    const [modulos] = await db.execute(`
+    const [modulos] = await db.query(`
       SELECT * FROM modulos_aprendizagem 
       WHERE ativo = 1 
       ORDER BY ordem ASC
@@ -31,7 +31,7 @@ router.get('/modulos/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [modulos] = await db.execute(
+    const [modulos] = await db.query(
       'SELECT * FROM modulos_aprendizagem WHERE id = ? AND ativo = 1',
       [id]
     );
@@ -62,7 +62,7 @@ router.get('/progresso', authenticateToken, async (req, res) => {
   try {
     const usuario_id = req.user.id;
 
-    const [progresso] = await db.execute(`
+    const [progresso] = await db.query(`
       SELECT 
         pa.modulo_id,
         ma.titulo,
@@ -77,7 +77,7 @@ router.get('/progresso', authenticateToken, async (req, res) => {
     `, [usuario_id]);
 
     // Calcular progresso geral
-    const [totalModulos] = await db.execute(
+    const [totalModulos] = await db.query(
       'SELECT COUNT(*) as total FROM modulos_aprendizagem WHERE ativo = 1'
     );
     
@@ -112,7 +112,7 @@ router.post('/progresso', authenticateToken, async (req, res) => {
     const usuario_id = req.user.id;
 
     // Verificar se o módulo existe
-    const [modulo] = await db.execute(
+    const [modulo] = await db.query(
       'SELECT * FROM modulos_aprendizagem WHERE id = ? AND ativo = 1',
       [modulo_id]
     );
@@ -125,20 +125,20 @@ router.post('/progresso', authenticateToken, async (req, res) => {
     }
 
     // Verificar se já existe progresso
-    const [progressoExistente] = await db.execute(
+    const [progressoExistente] = await db.query(
       'SELECT * FROM progresso_aprendizagem WHERE usuario_id = ? AND modulo_id = ?',
       [usuario_id, modulo_id]
     );
 
     if (progressoExistente.length > 0) {
       // Atualizar progresso existente
-      await db.execute(
+      await db.query(
         'UPDATE progresso_aprendizagem SET concluido = ?, progresso = ?, atualizado_em = CURRENT_TIMESTAMP WHERE usuario_id = ? AND modulo_id = ?',
         [concluido, progresso, usuario_id, modulo_id]
       );
     } else {
       // Inserir novo progresso
-      await db.execute(
+      await db.query(
         'INSERT INTO progresso_aprendizagem (usuario_id, modulo_id, concluido, progresso) VALUES (?, ?, ?, ?)',
         [usuario_id, modulo_id, concluido, progresso]
       );
@@ -179,7 +179,7 @@ router.get('/teste/perguntas', authenticateToken, async (req, res) => {
     query += ' ORDER BY RAND() LIMIT ?';
     params.push(parseInt(limit));
 
-    const [perguntas] = await db.execute(query, params);
+    const [perguntas] = await db.query(query, params);
 
     // Parse das opções JSON
     const perguntasComOpcoes = perguntas.map(pergunta => ({
@@ -221,7 +221,7 @@ router.post('/teste/submeter', authenticateToken, async (req, res) => {
     const detalhesRespostas = [];
 
     for (const resposta of respostas) {
-      const [pergunta] = await db.execute(
+      const [pergunta] = await db.query(
         'SELECT * FROM perguntas_teste WHERE id = ?',
         [resposta.pergunta_id]
       );
@@ -244,7 +244,7 @@ router.post('/teste/submeter', authenticateToken, async (req, res) => {
     const aprovado = pontuacao >= 75; // 75% para aprovação
 
     // Salvar resultado
-    await db.execute(`
+    await db.query(`
       INSERT INTO resultados_teste 
       (usuario_id, sessao_id, pontuacao, aprovado, total_perguntas, acertos, detalhes_respostas) 
       VALUES (?, ?, ?, ?, ?, ?, ?)

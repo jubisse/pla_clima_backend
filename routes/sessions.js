@@ -97,7 +97,7 @@ router.get('/', authenticateToken, async (req, res) => {
     let sessoes = [];
     try {
       // ✅ EXECUTAR QUERY PRINCIPAL DE FORMA SEGURA
-      const [result] = await db.execute(baseQuery, queryParams);
+      const [result] = await db.query(baseQuery, queryParams);
       
       // ✅ CORREÇÃO: Verificar se result é um array antes de usar
       if (Array.isArray(result)) {
@@ -117,7 +117,7 @@ router.get('/', authenticateToken, async (req, res) => {
       // ✅ FALLBACK: Query alternativa mais simples
       try {
         const fallbackQuery = `SELECT * FROM sessions ORDER BY data DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
-        const [fallbackResult] = await db.execute(fallbackQuery);
+        const [fallbackResult] = await db.query(fallbackQuery);
         
         if (Array.isArray(fallbackResult)) {
           sessoes = fallbackResult;
@@ -164,7 +164,7 @@ router.get('/', authenticateToken, async (req, res) => {
         paramsCount: countParams.length 
       });
 
-      const [countResult] = await db.execute(countQuery, countParams);
+      const [countResult] = await db.query(countQuery, countParams);
       
       // ✅ CORREÇÃO: Verificar estrutura do resultado ANTES de acessar
       if (countResult && 
@@ -190,7 +190,7 @@ router.get('/', authenticateToken, async (req, res) => {
       try {
         // ✅ FALLBACK DE CONTAGEM: Query simples sem filtros
         const simpleCountQuery = 'SELECT COUNT(*) as total FROM sessions';
-        const [simpleCountResult] = await db.execute(simpleCountQuery);
+        const [simpleCountResult] = await db.query(simpleCountQuery);
         
         // ✅ CORREÇÃO: Verificação robusta da estrutura
         if (simpleCountResult && 
@@ -317,7 +317,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       WHERE s.id = ?
     `;
 
-    const [sessoes] = await db.execute(query, [sessaoId]);
+    const [sessoes] = await db.query(query, [sessaoId]);
 
     // ✅ VERIFICAÇÃO ROBUSTA DO RESULTADO
     if (!Array.isArray(sessoes) || sessoes.length === 0) {
@@ -454,7 +454,7 @@ router.post('/', authenticateToken, async (req, res) => {
     let result;
     try {
       // ✅ CORREÇÃO: Não desestruturar diretamente - tratar o resultado
-      const queryResult = await db.execute(query, valores);
+      const queryResult = await db.query(query, valores);
       
       // Verificar a estrutura do resultado
       if (Array.isArray(queryResult) && queryResult.length > 0) {
@@ -516,7 +516,7 @@ router.post('/', authenticateToken, async (req, res) => {
       
       for (const atividade of atividades) {
         try {
-          await db.execute(
+          await db.query(
             `INSERT INTO atividades_classificadas (
               sessao_id, atividade, descricao, objectivo_estrategico,
               criterios, prioridade, tempo_impacto, capex, risco_maladaptacao, created_at
@@ -554,7 +554,7 @@ router.post('/', authenticateToken, async (req, res) => {
     // ✅ BUSCAR SESSÃO CRIADA COM DADOS COMPLETOS
     let sessaoCriada;
     try {
-      const [sessoes] = await db.execute(
+      const [sessoes] = await db.query(
         `SELECT 
           s.*,
           (SELECT nome FROM usuarios WHERE id = s.facilitador_id) as facilitador_nome,
@@ -568,7 +568,7 @@ router.post('/', authenticateToken, async (req, res) => {
         sessaoCriada = sessoes[0];
       } else {
         // Fallback: buscar dados básicos
-        const [sessoesBasicas] = await db.execute(
+        const [sessoesBasicas] = await db.query(
           'SELECT * FROM sessions WHERE id = ?',
           [sessaoId]
         );
@@ -614,12 +614,12 @@ router.get('/health/check', authenticateToken, async (req, res) => {
     logger.debug('Health check das sessões solicitado', { userId: req.user.id });
 
     // Verificar se a tabela sessions existe e tem dados
-    const [tableCheck] = await db.execute("SHOW TABLES LIKE 'sessions'");
+    const [tableCheck] = await db.query("SHOW TABLES LIKE 'sessions'");
     const tableExists = Array.isArray(tableCheck) && tableCheck.length > 0;
 
     let totalSessoes = 0;
     if (tableExists) {
-      const [countResult] = await db.execute('SELECT COUNT(*) as total FROM sessions');
+      const [countResult] = await db.query('SELECT COUNT(*) as total FROM sessions');
       if (countResult && Array.isArray(countResult) && countResult.length > 0) {
         totalSessoes = countResult[0].total || 0;
       }
@@ -684,7 +684,7 @@ router.get('/:id/participantes', authenticateToken, async (req, res) => {
     // ✅ VERIFICAR SE A SESSÃO EXISTE PRIMEIRO
     let sessaoExiste = false;
     try {
-      const [sessoes] = await db.execute('SELECT id FROM sessions WHERE id = ?', [sessaoId]);
+      const [sessoes] = await db.query('SELECT id FROM sessions WHERE id = ?', [sessaoId]);
       sessaoExiste = Array.isArray(sessoes) && sessoes.length > 0;
     } catch (checkError) {
       logger.error('Erro ao verificar existência da sessão', {
@@ -737,8 +737,8 @@ router.get('/:id/participantes', authenticateToken, async (req, res) => {
         offset: offset
       });
 
-      const [result] = await db.execute(query, [sessaoId, limitNum, offset]);
-      const [countResult] = await db.execute(countQuery, [sessaoId]);
+      const [result] = await db.query(query, [sessaoId, limitNum, offset]);
+      const [countResult] = await db.query(countQuery, [sessaoId]);
 
       if (Array.isArray(result)) {
         participantes = result;
@@ -776,8 +776,8 @@ router.get('/:id/participantes', authenticateToken, async (req, res) => {
 
         const altCountQuery = 'SELECT COUNT(*) as total FROM session_participants WHERE session_id = ?';
 
-        const [altResult] = await db.execute(altQuery, [sessaoId, limitNum, offset]);
-        const [altCountResult] = await db.execute(altCountQuery, [sessaoId]);
+        const [altResult] = await db.query(altQuery, [sessaoId, limitNum, offset]);
+        const [altCountResult] = await db.query(altCountQuery, [sessaoId]);
 
         if (Array.isArray(altResult)) {
           participantes = altResult;
@@ -900,7 +900,7 @@ router.patch('/:sessaoId/participantes/:usuarioId', authenticateToken, async (re
     let participanteExiste = false;
     try {
       const query = 'SELECT id FROM participantes_sessao WHERE sessao_id = ? AND usuario_id = ?';
-      const [result] = await db.execute(query, [sessaoIdNum, usuarioIdNum]);
+      const [result] = await db.query(query, [sessaoIdNum, usuarioIdNum]);
       participanteExiste = Array.isArray(result) && result.length > 0;
     } catch (checkError) {
       logger.warn('Erro ao verificar participante, tentando criar...', {
@@ -912,7 +912,7 @@ router.patch('/:sessaoId/participantes/:usuarioId', authenticateToken, async (re
     if (participanteExiste) {
       // ✅ ATUALIZAR STATUS EXISTENTE
       const updateQuery = 'UPDATE participantes_sessao SET status = ?, updated_at = NOW() WHERE sessao_id = ? AND usuario_id = ?';
-      [result] = await db.execute(updateQuery, [status, sessaoIdNum, usuarioIdNum]);
+      [result] = await db.query(updateQuery, [status, sessaoIdNum, usuarioIdNum]);
       
       logger.info('Status do participante atualizado', {
         sessionId: sessaoIdNum,
@@ -925,7 +925,7 @@ router.patch('/:sessaoId/participantes/:usuarioId', authenticateToken, async (re
         INSERT INTO participantes_sessao (sessao_id, usuario_id, status, data_inscricao, created_at) 
         VALUES (?, ?, ?, NOW(), NOW())
       `;
-      [result] = await db.execute(insertQuery, [sessaoIdNum, usuarioIdNum, status]);
+      [result] = await db.query(insertQuery, [sessaoIdNum, usuarioIdNum, status]);
       
       logger.info('Novo registro de participação criado', {
         sessionId: sessaoIdNum,
@@ -983,7 +983,7 @@ router.delete('/:sessaoId/participantes/:usuarioId', authenticateToken, async (r
 
     // ✅ EXECUTAR REMOÇÃO
     const query = 'DELETE FROM participantes_sessao WHERE sessao_id = ? AND usuario_id = ?';
-    const [result] = await db.execute(query, [sessaoIdNum, usuarioIdNum]);
+    const [result] = await db.query(query, [sessaoIdNum, usuarioIdNum]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({
@@ -1055,7 +1055,7 @@ router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
     }
 
     // ✅ VERIFICAR SE A SESSÃO EXISTE
-    const [sessoes] = await db.execute('SELECT id FROM sessions WHERE id = ?', [sessaoIdNum]);
+    const [sessoes] = await db.query('SELECT id FROM sessions WHERE id = ?', [sessaoIdNum]);
     if (!Array.isArray(sessoes) || sessoes.length === 0) {
       return res.status(404).json({
         success: false,
@@ -1064,7 +1064,7 @@ router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
     }
 
     // ✅ VERIFICAR SE O USUÁRIO EXISTE
-    const [usuarios] = await db.execute('SELECT id FROM usuarios WHERE id = ?', [usuarioIdNum]);
+    const [usuarios] = await db.query('SELECT id FROM usuarios WHERE id = ?', [usuarioIdNum]);
     if (!Array.isArray(usuarios) || usuarios.length === 0) {
       return res.status(404).json({
         success: false,
@@ -1073,7 +1073,7 @@ router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
     }
 
     // ✅ VERIFICAR SE JÁ É PARTICIPANTE
-    const [existentes] = await db.execute(
+    const [existentes] = await db.query(
       'SELECT id FROM participantes_sessao WHERE sessao_id = ? AND usuario_id = ?',
       [sessaoIdNum, usuarioIdNum]
     );
@@ -1091,7 +1091,7 @@ router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
       VALUES (?, ?, ?, NOW(), NOW())
     `;
 
-    const [result] = await db.execute(query, [sessaoIdNum, usuarioIdNum, status]);
+    const [result] = await db.query(query, [sessaoIdNum, usuarioIdNum, status]);
 
     logger.info('Participante adicionado com sucesso', {
       sessionId: sessaoIdNum,
@@ -1101,7 +1101,7 @@ router.post('/:sessaoId/participantes', authenticateToken, async (req, res) => {
     });
 
     // ✅ BUSCAR DADOS COMPLETOS DO PARTICIPANTE
-    const [participantes] = await db.execute(
+    const [participantes] = await db.query(
       `SELECT 
         ps.*,
         u.nome, u.email, u.telefone, u.organizacao, u.provincia, u.distrito

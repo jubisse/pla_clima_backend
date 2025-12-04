@@ -32,13 +32,13 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
       .toISOString().split('T')[0];
 
     // ✅ SESSÕES ATIVAS (em_curso)
-    const [sessoesAtivasResult] = await db.execute(
+    const [sessoesAtivasResult] = await db.query(
       'SELECT COUNT(*) as total FROM sessions WHERE estado = "em_curso" AND facilitador_id = ?',
       [userId]
     );
 
     // ✅ TOTAL DE PARTICIPANTES (soma de participantes_confirmados)
-    const [totalParticipantesResult] = await db.execute(
+    const [totalParticipantesResult] = await db.query(
       `SELECT SUM(participantes_confirmados) as total 
        FROM sessions 
        WHERE facilitador_id = ?`,
@@ -46,7 +46,7 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
     );
 
     // ✅ PARTICIPANTES HOJE (sessões que ocorrem hoje)
-    const [participantesHojeResult] = await db.execute(
+    const [participantesHojeResult] = await db.query(
       `SELECT SUM(participantes_confirmados) as total 
        FROM sessions 
        WHERE data = ? AND facilitador_id = ?`,
@@ -54,7 +54,7 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
     );
 
     // ✅ SESSÕES CONCLUÍDAS NO MÊS
-    const [sessoesConcluidasMesResult] = await db.execute(
+    const [sessoesConcluidasMesResult] = await db.query(
       `SELECT COUNT(*) as total 
        FROM sessions 
        WHERE estado = "concluida" AND data >= ? AND facilitador_id = ?`,
@@ -62,13 +62,13 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
     );
 
     // ✅ SESSÕES AGENDADAS
-    const [sessoesAgendadasResult] = await db.execute(
+    const [sessoesAgendadasResult] = await db.query(
       'SELECT COUNT(*) as total FROM sessions WHERE estado = "agendada" AND facilitador_id = ?',
       [userId]
     );
 
     // ✅ TAXA DE PARTICIPAÇÃO (média de participantes_confirmados / participantes_previstos)
-    const [taxaParticipacaoResult] = await db.execute(
+    const [taxaParticipacaoResult] = await db.query(
       `SELECT 
         AVG(CASE 
           WHEN participantes_previstos > 0 THEN 
@@ -81,13 +81,13 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
     );
 
     // ✅ TEMPO MÉDIO DAS SESSÕES
-    const [tempoMedioResult] = await db.execute(
+    const [tempoMedioResult] = await db.query(
       'SELECT AVG(duracao) as media FROM sessions WHERE facilitador_id = ? AND duracao IS NOT NULL',
       [userId]
     );
 
     // ✅ ATIVIDADES CLASSIFICADAS (das sessões do facilitador)
-    const [atividadesClassificadasResult] = await db.execute(
+    const [atividadesClassificadasResult] = await db.query(
       `SELECT COUNT(*) as total 
        FROM atividades_classificadas ac
        JOIN sessions s ON ac.sessao_id = s.id 
@@ -98,7 +98,7 @@ router.get('/facilitador', authenticateToken, async (req, res) => {
     // ✅ VOTOS RECEBIDOS (das atividades do facilitador)
     let votosRecebidos = 0;
     try {
-      const [votosResult] = await db.execute(
+      const [votosResult] = await db.query(
         `SELECT COUNT(*) as total 
          FROM votos_usuario vu
          JOIN atividades_classificadas ac ON vu.atividade_id = ac.id
@@ -165,7 +165,7 @@ router.get('/atividades-recentes', authenticateToken, async (req, res) => {
 
     if (scope === 'facilitador') {
       // ✅ SESSÕES CRIADAS RECENTEMENTE PELO FACILITADOR
-      const [sessoesRecentes] = await db.execute(
+      const [sessoesRecentes] = await db.query(
         `SELECT 
           id,
           titulo,
@@ -182,7 +182,7 @@ router.get('/atividades-recentes', authenticateToken, async (req, res) => {
       );
 
       // ✅ PARTICIPANTES CONFIRMADOS RECENTEMENTE
-      const [participantesRecentes] = await db.execute(
+      const [participantesRecentes] = await db.query(
         `SELECT 
           ps.id,
           s.titulo,
@@ -200,7 +200,7 @@ router.get('/atividades-recentes', authenticateToken, async (req, res) => {
       );
 
       // ✅ ATIVIDADES CLASSIFICADAS RECENTES
-      const [atividadesRecentes] = await db.execute(
+      const [atividadesRecentes] = await db.query(
         `SELECT 
           ac.id,
           ac.atividade,
@@ -259,7 +259,7 @@ router.get('/atividades-recentes', authenticateToken, async (req, res) => {
 
     } else {
       // ✅ ATIVIDADES DO PARTICIPANTE
-      const [participanteAtividades] = await db.execute(
+      const [participanteAtividades] = await db.query(
         `SELECT 
           ps.id,
           s.titulo,
@@ -394,7 +394,7 @@ router.get('/sessoes-detalhes', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const [sessoes] = await db.execute(
+    const [sessoes] = await db.query(
       `SELECT 
         id,
         titulo,
