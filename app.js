@@ -4,7 +4,22 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { createUploadDirs } = require('./config/upload');
-const db = require('./config/database');
+
+// ===================== CONFIGURAÇÃO DE BANCO =====================
+let db;
+try {
+  db = require('./config/database');
+  console.log('✅ Módulo database carregado com sucesso');
+} catch (error) {
+  console.error('❌ ERRO CRÍTICO: Não foi possível carregar módulo database:', error.message);
+  // Criar stub para evitar crash
+  db = {
+    execute: async () => {
+      console.error('⚠️ Tentativa de usar database não disponível');
+      throw new Error('Database module not loaded');
+    }
+  };
+}
 
 // ===================== CONFIGURAÇÕES =====================
 const app = express();
@@ -19,10 +34,11 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       'https://climatica.sotservice.co.mz',
-      'https://pla-clima-backend.onrender.com'
+      'https://pla-clima-backend.onrender.com',
+      'http://localhost:3000'
     ].filter(Boolean);
 
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Permitir requisições sem origin (mobile apps, curl)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1 || NODE_ENV === 'development') {
@@ -34,13 +50,14 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Authorization']
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Preflight requests
+app.options('*', cors(corsOptions));
 
-// Trust proxy for rate limiting and real IP
+// Trust proxy para Render
 app.set("trust proxy", 1);
 
 // Body parsers
@@ -49,34 +66,36 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: NODE_ENV === 'production' ? 100 : 1000, // Max requests per window
+  windowMs: 15 * 60 * 1000,
+  max: NODE_ENV === 'production' ? 200 : 1000,
   message: {
     success: false,
     error: 'Muitas requisições. Tente novamente mais tarde.'
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: false,
+  keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip || 'unknown'
 });
 
 app.use('/api/', limiter);
 
-// Request logging middleware
+// Logging middleware
 const requestLogger = (req, res, next) => {
   const timestamp = new Date().toLocaleString('pt-MZ');
-  const ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress;
   
   console.log(`📍 ${timestamp} | ${req.method} ${req.originalUrl} | IP: ${ip}`);
   
-  // Log body for debugging (except sensitive data)
+  // Log body (sensível ofuscado)
   if (req.body && Object.keys(req.body).length > 0) {
     const safeBody = { ...req.body };
-    if (safeBody.password) safeBody.password = '***';
-    if (safeBody.senha) safeBody.senha = '***';
-    if (safeBody.senha_hash) safeBody.senha_hash = '***';
-    if (safeBody.token) safeBody.token = '***';
-    
-    console.log(`📦 Body:`, JSON.stringify(safeBody));
+    ['password', 'senha', 'senha_hash', 'token', 'jwt', 'refreshToken'].forEach(key => {
+      if (safeBody[key]) safeBody[key] = '***';
+    });
+    if (Object.keys(safeBody).length > 0) {
+      console.log(`📦 Body:`, JSON.stringify(safeBody).substring(0, 500));
+    }
   }
   
   next();
@@ -93,33 +112,47 @@ app.use('/uploads', express.static('uploads'));
     console.log('🚀 Iniciando configurações iniciais...');
     console.log(`🌍 Ambiente: ${NODE_ENV}`);
     console.log(`🔧 Porta: ${PORT}`);
+    console.log(`🔗 URL Base: https://pla-clima-backend.onrender.com`);
 
-    // Create upload directories
+    // Criar diretórios de upload
     await createUploadDirs();
+    console.log('✅ Diretórios de upload verificados/criados');
     
-    // Test database connection
-    console.log('🔍 Testando conexão com o banco...');
+    // Testar conexão com banco
+    console.log('🔍 Testando conexão com MySQL...');
     try {
-      const [testResult] = await db.execute('SELECT 1 as test');
-      console.log('✅ Conexão com banco de dados OK');
+      if (typeof db.execute === 'function') {
+        const [testResult] = await db.execute('SELECT 1 as test, NOW() as timestamp');
+        console.log('✅ Conexão MySQL OK:', testResult[0]);
+      } else {
+        console.warn('⚠️ db.execute não é uma função. Verifique config/database.js');
+      }
     } catch (dbError) {
-      console.error('❌ Erro na conexão com banco:', dbError.message);
-      // Não lançamos o erro em produção, apenas logamos
+      console.error('❌ Erro na conexão MySQL:', {
+        message: dbError.message,
+        code: dbError.code,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 3306
+      });
+      
       if (NODE_ENV !== 'production') {
         throw dbError;
+      } else {
+        console.log('⚠️ Continuando sem conexão ao banco...');
       }
     }
 
-    // Initialize database only in development
+    // Inicializar banco apenas em desenvolvimento
     if (NODE_ENV !== 'production') {
       try {
-        await require('./scripts/initDatabaseSimple')();
-        console.log('✅ Banco de dados inicializado');
+        const initDb = require('./scripts/initDatabaseSimple');
+        await initDb();
+        console.log('✅ Banco de dados inicializado para desenvolvimento');
       } catch (initError) {
         console.warn('⚠️ Erro na inicialização do banco:', initError.message);
       }
     } else {
-      console.log("⚠️ Inicialização do banco ignorada em produção.");
+      console.log("⚠️ Inicialização automática do banco ignorada em produção");
     }
 
     console.log('✅ Configurações iniciais concluídas!');
@@ -133,60 +166,87 @@ app.use('/uploads', express.static('uploads'));
   }
 })();
 
-// ===================== ROTAS DE DEBUG =====================
-// Estas rotas devem ser removidas em produção ou protegidas
+// ===================== ROTAS DE DEBUG E DIAGNÓSTICO =====================
 
-// Test database connection
+// Teste de conexão com banco
 app.get('/api/debug/test-db', async (req, res) => {
   try {
-    console.log('🔍 Testando conexão com MySQL...');
-    const [result] = await db.execute('SELECT 1 as test');
-    res.json({ 
-      success: true, 
-      message: 'Conexão com MySQL OK',
-      data: result,
+    console.log('🔍 Testando conexão MySQL via API...');
+    
+    if (typeof db.execute !== 'function') {
+      return res.status(503).json({
+        success: false,
+        error: 'Módulo database não carregado corretamente',
+        environment: NODE_ENV
+      });
+    }
+    
+    const [result] = await db.execute('SELECT 1 as test, NOW() as server_time, DATABASE() as database_name, USER() as mysql_user');
+    
+    res.json({
+      success: true,
+      message: 'Conexão MySQL OK',
+      data: result[0],
       timestamp: new Date().toISOString(),
-      environment: NODE_ENV
+      environment: NODE_ENV,
+      dbConfig: {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 3306,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER
+      }
     });
   } catch (error) {
-    console.error('❌ Erro na conexão MySQL:', error);
-    res.status(500).json({ 
-      success: false, 
+    console.error('❌ Erro no teste MySQL:', error);
+    res.status(500).json({
+      success: false,
       error: error.message,
-      environment: NODE_ENV
+      code: error.code,
+      environment: NODE_ENV,
+      dbConfig: {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 3306,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER
+      }
     });
   }
 });
 
-// List all users
+// Listar usuários (apenas desenvolvimento)
 app.get('/api/debug/users', async (req, res) => {
+  if (NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acesso negado em produção'
+    });
+  }
+  
   try {
-    console.log('🔍 Listando usuários...');
     const [users] = await db.execute('SELECT id, nome, email, perfil, created_at FROM usuarios ORDER BY id');
     
-    // Remove sensitive info for logging
-    const safeUsers = users.map(u => ({ id: u.id, nome: u.nome, email: u.email, perfil: u.perfil }));
-    console.log(`👥 ${users.length} usuários encontrados`);
-    
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       count: users.length,
-      users: safeUsers,
+      users: users,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('❌ Erro ao listar usuários:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: error.message
     });
   }
 });
 
-// Generate password hash (temporary)
+// Gerar hash de senha (apenas desenvolvimento)
 app.get('/api/debug/generate-hash', (req, res) => {
   if (NODE_ENV === 'production' && !req.query.admin) {
-    return res.status(403).json({ success: false, error: 'Acesso negado em produção' });
+    return res.status(403).json({
+      success: false,
+      error: 'Acesso negado em produção'
+    });
   }
   
   const bcrypt = require('bcryptjs');
@@ -197,41 +257,63 @@ app.get('/api/debug/generate-hash', (req, res) => {
     password: password,
     hash: hash,
     length: hash.length,
-    sqlCommand: `UPDATE usuarios SET senha_hash = '${hash}' WHERE email = 'jane@demo.mz';`
+    sqlCommand: `UPDATE usuarios SET senha_hash = '${hash}' WHERE email = 'seu-email@exemplo.com';`
   });
 });
 
-// Check specific user's password
-app.post('/api/debug/check-user-password', async (req, res) => {
+// Verificar senha de usuário (apenas desenvolvimento)
+app.post('/api/debug/check-password', async (req, res) => {
+  if (NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acesso negado em produção'
+    });
+  }
+  
   try {
-    const { email } = req.body;
+    const { email, password } = req.body;
     
     if (!email) {
-      return res.status(400).json({ success: false, error: 'Email é obrigatório' });
+      return res.status(400).json({
+        success: false,
+        error: 'Email é obrigatório'
+      });
     }
     
     const [users] = await db.execute(
-      'SELECT email, senha_hash FROM usuarios WHERE email = ?',
+      'SELECT id, email, senha_hash FROM usuarios WHERE email = ?',
       [email]
     );
     
     if (users.length === 0) {
-      return res.json({ success: false, error: 'Usuário não encontrado' });
+      return res.json({
+        success: false,
+        error: 'Usuário não encontrado'
+      });
     }
     
     const user = users[0];
+    const bcrypt = require('bcryptjs');
+    const isValid = password ? await bcrypt.compare(password, user.senha_hash) : null;
+    
     res.json({
       success: true,
-      user: {
+      data: {
+        userId: user.id,
         email: user.email,
-        hash_start: user.senha_hash.substring(0, 30) + '...',
-        hash_length: user.senha_hash.length,
-        is_bcrypt: user.senha_hash.startsWith('$2a$')
+        hashStart: user.senha_hash.substring(0, 30) + '...',
+        hashLength: user.senha_hash.length,
+        isBcrypt: user.senha_hash.startsWith('$2a$') || user.senha_hash.startsWith('$2b$'),
+        passwordValid: isValid,
+        issues: !user.senha_hash.startsWith('$2') ? 'Hash não parece ser bcrypt' : null
       }
     });
   } catch (error) {
     console.error('❌ Erro ao verificar senha:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
@@ -257,49 +339,78 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // ===================== ROTAS DE SISTEMA =====================
 
-// Health check endpoint (for Render health checks)
+// Health check para Render
 app.get('/api/health', async (req, res) => {
+  const healthData = {
+    success: true,
+    message: 'Servidor operacional',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: NODE_ENV,
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    checks: {
+      server: 'operational',
+      database: 'unknown'
+    }
+  };
+  
   try {
-    // Test database connection
-    const [dbTest] = await db.execute('SELECT 1 as test');
-    
-    res.json({
-      success: true,
-      message: 'Servidor operacional',
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      environment: NODE_ENV,
-      uptime: process.uptime(),
-      database: 'connected',
-      memory: process.memoryUsage()
-    });
+    // Testar conexão com banco
+    if (typeof db.execute === 'function') {
+      const [testResult] = await db.execute('SELECT 1 as test');
+      healthData.checks.database = 'connected';
+      healthData.database = {
+        status: 'connected',
+        type: 'MySQL',
+        test: testResult[0]
+      };
+    } else {
+      healthData.checks.database = 'module_not_loaded';
+      healthData.database = {
+        status: 'disconnected',
+        error: 'Módulo database não carregado'
+      };
+    }
   } catch (error) {
-    console.error('❌ Health check failed:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Servidor com problemas',
+    healthData.success = false;
+    healthData.message = 'Servidor com problemas no banco de dados';
+    healthData.status = 'degraded';
+    healthData.checks.database = 'disconnected';
+    healthData.database = {
+      status: 'disconnected',
       error: error.message,
-      database: 'disconnected'
-    });
+      code: error.code
+    };
+    
+    return res.status(503).json(healthData);
   }
+  
+  res.json(healthData);
 });
 
-// Root endpoint
+// Rota raiz
 app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'API PlaClima Backend',
-    version: '1.0.0',
+    version: '2.0.0',
     environment: NODE_ENV,
-    docs: '/api/docs', // Consider adding Swagger docs
+    timestamp: new Date().toISOString(),
+    documentation: 'https://github.com/seu-repo/docs',
     endpoints: {
       auth: '/api/auth',
+      users: '/api/users',
       sessions: '/api/sessoes',
       voting: '/api/votacao',
-      users: '/api/users',
+      learning: '/api/learning',
       admin: '/api/admin',
-      dashboard: '/api/dashboard'
-    }
+      dashboard: '/api/dashboard',
+      health: '/api/health',
+      docs: '/api/docs'
+    },
+    status: 'operational',
+    uptime: process.uptime()
   });
 });
 
@@ -312,7 +423,12 @@ app.use((req, res) => {
     error: 'Rota não encontrada',
     path: req.originalUrl,
     method: req.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    suggestions: [
+      'Verifique a URL',
+      'Consulte a documentação em /',
+      'Entre em contato com o suporte'
+    ]
   });
 });
 
@@ -321,9 +437,10 @@ const errorLogger = (err, req, res, next) => {
   console.error(`💥 ERRO CRÍTICO em ${req.method} ${req.url}:`, {
     message: err.message,
     stack: NODE_ENV === 'development' ? err.stack : undefined,
-    body: req.body,
+    body: req.body ? JSON.stringify(req.body).substring(0, 500) : null,
     params: req.params,
-    query: req.query
+    query: req.query,
+    ip: req.headers['x-forwarded-for'] || req.ip
   });
   next(err);
 };
@@ -332,14 +449,29 @@ app.use(errorLogger);
 
 app.use((error, req, res, next) => {
   const statusCode = error.statusCode || 500;
-  const message = error.message || 'Erro interno do servidor';
+  const message = NODE_ENV === 'production' && statusCode === 500 
+    ? 'Erro interno do servidor' 
+    : error.message;
   
-  res.status(statusCode).json({
+  const response = {
     success: false,
     error: message,
-    ...(NODE_ENV === 'development' && { stack: error.stack }),
-    timestamp: new Date().toISOString()
-  });
+    timestamp: new Date().toISOString(),
+    path: req.originalUrl,
+    method: req.method
+  };
+  
+  if (NODE_ENV === 'development') {
+    response.stack = error.stack;
+    response.details = {
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    };
+  }
+  
+  res.status(statusCode).json(response);
 });
 
 // ===================== INICIAR SERVIDOR =====================
@@ -348,32 +480,45 @@ const server = app.listen(PORT, () => {
   console.log(`🌍 Ambiente: ${NODE_ENV}`);
   console.log(`🔗 URL: https://pla-clima-backend.onrender.com`);
   console.log(`📊 Health check: https://pla-clima-backend.onrender.com/api/health`);
+  console.log(`📈 Status: https://pla-clima-backend.onrender.com`);
+  console.log(`🔍 Debug: https://pla-clima-backend.onrender.com/api/debug/test-db`);
 });
 
 // Graceful shutdown
 const shutdown = (signal) => {
-  console.log(`\n🛑 ${signal} recebido. Encerrando...`);
+  console.log(`\n🛑 ${signal} recebido. Encerrando graciosamente...`);
   
-  server.close(() => {
+  server.close(async () => {
     console.log('✅ Servidor HTTP encerrado');
     
-    // Close database connections if any
-    if (db.end) {
-      db.end((err) => {
-        if (err) console.error('❌ Erro ao fechar conexões do banco:', err);
-        console.log('✅ Conexões do banco encerradas');
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
+    // Encerrar conexões do banco
+    try {
+      if (db && typeof db.end === 'function') {
+        await new Promise((resolve, reject) => {
+          db.end((err) => {
+            if (err) {
+              console.error('❌ Erro ao fechar conexões do banco:', err);
+              reject(err);
+            } else {
+              console.log('✅ Conexões do banco encerradas');
+              resolve();
+            }
+          });
+        });
+      }
+    } catch (dbError) {
+      console.error('❌ Erro no encerramento do banco:', dbError);
     }
+    
+    console.log('👋 Encerramento completo');
+    process.exit(0);
   });
 
-  // Force shutdown after 10 seconds
+  // Shutdown forçado após 30 segundos
   setTimeout(() => {
     console.error('❌ Shutdown forçado após timeout');
     process.exit(1);
-  }, 10000);
+  }, 30000);
 };
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
@@ -381,15 +526,26 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('💥 Exceção não capturada:', error);
-  // Don't exit in production, let the process continue
+  console.error('💥 EXCEÇÃO NÃO CAPTURADA:', {
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+  
   if (NODE_ENV === 'production') {
-    console.log('⚠️ Continuando apesar da exceção não capturada');
+    console.log('⚠️ Continuando apesar da exceção não capturada...');
+  } else {
+    process.exit(1);
   }
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('💥 Promise rejeitada não tratada:', reason);
+  console.error('💥 PROMISE REJEITADA NÃO TRATADA:', {
+    reason: reason?.message || reason,
+    promise: promise,
+    timestamp: new Date().toISOString()
+  });
 });
 
+// ===================== EXPORTAÇÃO =====================
 module.exports = app;
