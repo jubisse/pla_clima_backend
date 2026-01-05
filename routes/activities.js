@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require('../config/database');
 
 // Middleware de autenticação (se necessário)
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/auth');
 
 // Rota para atividades recentes
 router.get('/atividades-recentes', authMiddleware, async (req, res) => {
