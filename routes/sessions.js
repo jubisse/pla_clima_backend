@@ -661,7 +661,6 @@ router.get('/participante', authenticateToken, async (req, res) => {
       FROM sessions s
       LEFT JOIN usuarios u ON s.facilitador_id = u.id
       LEFT JOIN participantes_sessao ps ON s.id = ps.sessao_id AND ps.usuario_id = ?
-      WHERE ps.usuario_id = ? OR s.facilitador_id = ?
       ORDER BY s.data DESC, s.horario DESC
     `, [req.user.id, req.user.id, req.user.id]);
     
