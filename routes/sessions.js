@@ -647,7 +647,7 @@ router.get('/health/check', authenticateToken, async (req, res) => {
 // ✅ ROTAS DE PARTICIPANTES - ADICIONAR NO FINAL DO ARQUIVO sessions.js
 
 // Rota para obter sessões do participante atual
-router.get('/participante', authMiddleware, async (req, res) => {
+router.get('/participante', authenticateToken, async (req, res) => {
   try {
     console.log('👤 Buscando sessões do participante:', req.user.id);
     
