@@ -68,6 +68,6 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+module.exports = authMiddleware; // Exportação padrão
 module.exports.authenticateToken = authMiddleware;
-module.exports.authMiddleware = authMiddleware;
+module.exports.requireRole = requireRole;
