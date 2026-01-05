@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { createUploadDirs } = require('./config/upload');
-const authMiddleware = require('./middleware/authMiddleware');
+const authMiddleware = require('./middleware/auth');
 
 // ===================== CONFIGURAÇÃO DE BANCO =====================
 let db;
