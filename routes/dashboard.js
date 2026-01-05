@@ -289,7 +289,6 @@ router.get('/atividades-recentes', authenticateToken, async (req, res) => {
           'high' as priority
          FROM atividades_classificadas ac
          JOIN sessions s ON ac.sessao_id = s.id
-         WHERE s.facilitador_id = ?
          ORDER BY ac.created_at DESC 
          LIMIT ?`,
         [userId, parseInt(limit)]
