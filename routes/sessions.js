@@ -1,4 +1,3 @@
-// backend/routes/sessions.js - VERSÃO COMPLETAMENTE CORRIGIDA
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
@@ -659,7 +658,7 @@ router.get('/participante', authMiddleware, async (req, res) => {
         u.nome as facilitador_nome,
         ps.status as status_inscricao,
         ps.data_inscricao
-      FROM sessoes s
+      FROM sessions s
       LEFT JOIN usuarios u ON s.facilitador_id = u.id
       LEFT JOIN participantes_sessao ps ON s.id = ps.sessao_id AND ps.usuario_id = ?
       WHERE ps.usuario_id = ? OR s.facilitador_id = ?
