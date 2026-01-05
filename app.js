@@ -68,7 +68,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: NODE_ENV === 'production' ? 200 : 1000,
+  max: process.env.NODE_ENV === 'production' ? 200 : 1000,
   message: {
     success: false,
     error: 'Muitas requisições. Tente novamente mais tarde.'
@@ -76,7 +76,11 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
-  keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip || 'unknown'
+  // ✅ ADICIONE ESTA VALIDAÇÃO PARA O RENDER
+  validate: { xForwardedForHeader: false },
+  keyGenerator: (req) => {
+    return req.headers['x-forwarded-for'] || req.ip || 'unknown';
+  }
 });
 
 app.use('/api/', limiter);
