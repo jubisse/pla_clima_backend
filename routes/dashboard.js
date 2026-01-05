@@ -165,7 +165,7 @@ router.get('/participante', authMiddleware, async (req, res) => {
         COUNT(DISTINCT CASE WHEN l.completado = 1 THEN l.id END) as modulos_concluidos
       FROM usuarios u
       LEFT JOIN participantes_sessao ps ON u.id = ps.usuario_id
-      LEFT JOIN sessoes s ON ps.sessao_id = s.id
+      LEFT JOIN sessions s ON ps.sessao_id = s.id
       LEFT JOIN votos v ON u.id = v.usuario_id
       LEFT JOIN learning_progress l ON u.id = l.usuario_id
       WHERE u.id = ?
@@ -176,7 +176,7 @@ router.get('/participante', authMiddleware, async (req, res) => {
       SELECT 
         s.*,
         u.nome as facilitador_nome
-      FROM sessoes s
+      FROM sessions s
       INNER JOIN participantes_sessao ps ON s.id = ps.sessao_id
       LEFT JOIN usuarios u ON s.facilitador_id = u.id
       WHERE ps.usuario_id = ? 
