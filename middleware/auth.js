@@ -18,23 +18,35 @@ const authMiddleware = async (req, res, next) => {
       token,
       process.env.JWT_SECRET || 'fallback-secret-key-change-in-production'
     );
+
+    // ✅ CORREÇÃO CRÍTICA: Tenta encontrar o ID em diferentes formatos comuns
+    const userId = decoded.id || decoded.userId || (decoded.user && decoded.user.id) || decoded.sub;
+
+    if (!userId) {
+      console.error('❌ Payload do Token JWT não contém um ID válido:', decoded);
+      return res.status(401).json({
+        success: false,
+        error: 'Token inválido: ID não encontrado'
+      });
+    }
     
+    // Busca usuário no banco usando query()
     const [users] = await db.query(
       'SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito FROM usuarios WHERE id = ?',
-      [decoded.id]
+      [userId]
     );
     
     if (!users || users.length === 0) {
       return res.status(401).json({
         success: false,
-        error: 'Usuário não encontrado'
+        error: 'Usuário não encontrado no banco de dados'
       });
     }
     
     req.user = users[0];
     req.userId = users[0].id;
     
-    console.log(`👤 Usuário autenticado: ${req.user.email} (ID: ${req.user.id})`);
+    console.log(`👤 Usuário autenticado com sucesso: ${req.user.email} (ID: ${req.user.id})`);
     next();
     
   } catch (error) {
@@ -44,11 +56,10 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'Token expirado', code: 'TOKEN_EXPIRED' });
     }
     
-    res.status(401).json({ success: false, error: 'Falha na autenticação' });
+    res.status(401).json({ success: false, error: 'Falha na autenticação: ' + error.message });
   }
 };
 
-// ✅ NOVA FUNÇÃO ADICIONADA: requireRole
 const requireRole = (roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.perfil)) {
@@ -62,7 +73,6 @@ const requireRole = (roles) => {
   };
 };
 
-// ✅ EXPORTAÇÃO CORRIGIDA (Exporta tanto a função principal quanto a secundária)
 module.exports = authMiddleware; 
 module.exports.authenticateToken = authMiddleware;
 module.exports.requireRole = requireRole;
