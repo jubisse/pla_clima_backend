@@ -3,17 +3,7 @@ require('dotenv').config();
 
 console.log('🔧 Inicializando módulo database MySQL...');
 
-// Log das configurações (sem mostrar senha)
-console.log('🔍 Configuração MySQL:', {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  hasPassword: !!process.env.DB_PASSWORD,
-  environment: process.env.NODE_ENV
-});
-
-// Criar pool de conexões
+// Configuração do Pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -30,51 +20,60 @@ const pool = mysql.createPool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Função para executar queries (usando execute para prepared statements e retornando SÓ as linhas)
-const query = async (sql, params = []) => {
-  try {
-    console.log(`📝 Executando query MySQL: ${sql.substring(0, 100)}...`);
-    // Usamos pool.execute, que é mais seguro (prepared statements)
-    const [rows] = await pool.execute(sql, params);
-    return rows; // Retorna apenas as linhas para simplificar a aplicação
-  } catch (error) {
-    console.error('❌ Erro na query MySQL:', {
-      message: error.message,
-      code: error.code,
-      sql: sql.substring(0, 200),
-      params: params
-    });
-    throw error;
-  }
+/**
+ * ✅ PADRONIZAÇÃO DE EXPORTAÇÃO
+ * Exportamos um objeto que imita o comportamento do driver mysql2 original,
+ * mas garante que estamos sempre usando o Pool de conexões.
+ */
+const db = {
+  /**
+   * Executa uma query simples. 
+   * Retorna [rows, fields] para manter compatibilidade com const [rows] = await...
+   */
+  query: async (sql, params) => {
+    try {
+      return await pool.query(sql, params);
+    } catch (error) {
+      console.error('❌ Erro em db.query:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Executa uma Prepared Statement (Mais seguro).
+   * Essencial para o seu middleware de autenticação que chama db.execute()
+   */
+  execute: async (sql, params) => {
+    try {
+      return await pool.execute(sql, params);
+    } catch (error) {
+      console.error('❌ Erro em db.execute:', error.message);
+      throw error;
+    }
+  },
+
+  // Exporta o pool caso precise de acesso direto
+  pool,
+
+  // Método para pegar uma conexão manual do pool
+  getConnection: () => pool.getConnection(),
+
+  // Método para encerrar o pool
+  end: () => pool.end()
 };
 
-// Testar conexão ao iniciar
+// Teste de conexão imediato
 (async () => {
   try {
     const connection = await pool.getConnection();
     console.log('✅ Conexão MySQL estabelecida com sucesso!');
-    console.log('📊 Server info:', {
-      threadId: connection.threadId,
-      serverVersion: connection._implicitConnect?.connection?._handshakePacket?.serverVersion || 'unknown'
-    });
     connection.release();
   } catch (error) {
-    console.error('❌ Falha na conexão MySQL:', {
+    console.error('❌ Falha crítica na conexão MySQL:', {
       message: error.message,
-      code: error.code,
-      errno: error.errno,
-      sqlState: error.sqlState,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT || 3306
+      host: process.env.DB_HOST
     });
   }
 })();
 
-// Exportar módulo com método query (padronizado)
-module.exports = {
-  query, // Agora retorna apenas as linhas
-  getConnection: () => pool.getConnection(),
-  pool,
-  // Métodos adicionais para compatibilidade
-  end: (callback) => pool.end(callback)
-};
+module.exports = db;
