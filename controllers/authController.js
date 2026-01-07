@@ -22,26 +22,26 @@ class AuthController {
 
             logger.info('Tentativa de registro', { email, nome });
 
-            // Verificar se email já existe
-            const existingUser = await connection.execute(
+            // 1. Verificar se email já existe (Desestruturação corrigida para o novo database.js)
+            const [existingUsers] = await connection.execute(
                 'SELECT id FROM usuarios WHERE email = ?',
                 [email]
             );
 
-            if (existingUser[0].length > 0) {
+            if (existingUsers && existingUsers.length > 0) {
                 throw new AppError('Já existe uma conta com este email', 409);
             }
 
-            // Hash da senha
+            // 2. Hash da senha
             const senhaHash = await hashPassword(senha);
 
-            // Determinar estrutura da tabela
+            // 3. Determinar estrutura da tabela para compatibilidade
             const [colunas] = await connection.execute('DESCRIBE usuarios');
             const colunasExistentes = colunas.map(col => col.Field);
             const temColunasCompletas = ['telefone', 'organizacao', 'cargo', 'provincia', 'distrito']
                 .every(col => colunasExistentes.includes(col));
 
-            // Inserir usuário
+            // 4. Inserir usuário
             let result;
             if (temColunasCompletas) {
                 [result] = await connection.execute(
@@ -62,10 +62,12 @@ class AuthController {
                 );
             }
 
-            // Gerar token JWT
+            const novoUsuarioId = result.insertId;
+
+            // 5. Gerar token JWT (Garantindo campo 'id' para o middleware)
             const token = jwt.sign(
                 { 
-                    id: result.insertId, 
+                    id: novoUsuarioId, 
                     email: email,
                     perfil: USER_ROLES.PARTICIPANTE
                 },
@@ -73,9 +75,8 @@ class AuthController {
                 { expiresIn: JWT.EXPIRES_IN }
             );
 
-            // Construir resposta
             const userResponse = {
-                id: result.insertId,
+                id: novoUsuarioId,
                 nome,
                 email,
                 perfil: USER_ROLES.PARTICIPANTE
@@ -87,7 +88,7 @@ class AuthController {
                 });
             }
 
-            logger.info('Usuário registrado com sucesso', { id: result.insertId, email });
+            logger.info('Usuário registrado com sucesso', { id: novoUsuarioId, email });
 
             res.status(201).json({
                 success: true,
@@ -104,24 +105,24 @@ class AuthController {
 
             logger.info('Tentativa de login', { email });
 
-            // Buscar usuário
+            // 1. Buscar usuário ativo
             const [users] = await connection.execute(
                 `SELECT id, email, senha_hash, nome, perfil, distrito, organizacao, provincia 
                  FROM usuarios WHERE email = ? AND ativo = TRUE`,
                 [email]
             );
 
-            if (users.length === 0) {
+            if (!users || users.length === 0) {
                 throw new AppError('Credenciais inválidas', 401);
             }
 
             const user = users[0];
 
-            // Verificar senha
+            // 2. Verificar senha
             const senhaValida = await verifyPassword(senha, user.senha_hash);
 
             if (!senhaValida) {
-                // Fallback para desenvolvimento (REMOVER EM PRODUÇÃO)
+                // Fallback para desenvolvimento
                 if (process.env.NODE_ENV === 'development') {
                     const senhasDev = ['password', '123456', 'senha', 'teste'];
                     if (senhasDev.includes(senha)) {
@@ -134,17 +135,13 @@ class AuthController {
                 }
             }
 
-            // Atualizar último login
-            try {
-                await connection.execute(
-                    'UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?',
-                    [user.id]
-                );
-            } catch (error) {
-                logger.warn('Não foi possível atualizar último login', error);
-            }
+            // 3. Atualizar último login (Silent update)
+            connection.execute(
+                'UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?',
+                [user.id]
+            ).catch(err => logger.warn('Erro ao atualizar último login', err));
 
-            // Gerar token
+            // 4. Gerar token (Obrigatório campo 'id' para o middleware/auth.js)
             const token = jwt.sign(
                 { 
                     id: user.id, 
@@ -185,14 +182,12 @@ class AuthController {
 
             logger.info('Solicitação de recuperação de senha', { email });
 
-            // Buscar usuário
             const [users] = await connection.execute(
                 'SELECT id, nome FROM usuarios WHERE email = ? AND ativo = TRUE',
                 [email]
             );
 
-            // Retornar sucesso mesmo se email não existir (por segurança)
-            if (users.length === 0) {
+            if (!users || users.length === 0) {
                 logger.info('Email não encontrado na recuperação', { email });
                 return res.json({
                     success: true,
@@ -204,7 +199,6 @@ class AuthController {
             const codigoRecuperacao = generateRecoveryCode();
             const expiracao = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
 
-            // Salvar código
             await connection.execute(
                 `INSERT INTO recuperacao_senha (usuario_id, codigo, expiracao, utilizado)
                  VALUES (?, ?, ?, FALSE)
@@ -215,12 +209,7 @@ class AuthController {
                 [user.id, codigoRecuperacao, expiracao]
             );
 
-            logger.info('Código de recuperação gerado', { 
-                usuario_id: user.id, 
-                codigo: codigoRecuperacao 
-            });
-
-            // TODO: Enviar email em produção
+            logger.info('Código de recuperação gerado', { usuario_id: user.id });
             console.log(`📨 Código de recuperação para ${email}: ${codigoRecuperacao}`);
 
             res.json({
@@ -246,12 +235,13 @@ class AuthController {
                 [email, codigo]
             );
 
-            if (codigos.length === 0) {
+            if (!codigos || codigos.length === 0) {
                 throw new AppError('Código inválido ou expirado', 400);
             }
 
             const tokenTemporario = jwt.sign(
                 { 
+                    id: codigos[0].usuario_id, // Usando 'id' por padrão
                     usuario_id: codigos[0].usuario_id,
                     tipo: 'recuperacao_senha'
                 },
@@ -277,7 +267,6 @@ class AuthController {
 
             logger.info('Tentativa de redefinição de senha');
 
-            // Verificar token
             let decoded;
             try {
                 decoded = jwt.verify(token, JWT.SECRET);
@@ -285,26 +274,25 @@ class AuthController {
                 throw new AppError('Token inválido ou expirado', 400);
             }
 
-            if (decoded.tipo !== 'recuperacao_senha') {
-                throw new AppError('Token inválido', 400);
+            const userId = decoded.id || decoded.usuario_id;
+
+            if (decoded.tipo !== 'recuperacao_senha' || !userId) {
+                throw new AppError('Token inválido para redefinição', 400);
             }
 
-            // Hash da nova senha
             const hashedPassword = await hashPassword(nova_senha);
 
-            // Atualizar senha
             await connection.execute(
                 'UPDATE usuarios SET senha_hash = ? WHERE id = ?',
-                [hashedPassword, decoded.usuario_id]
+                [hashedPassword, userId]
             );
 
-            // Marcar código como utilizado
             await connection.execute(
                 'UPDATE recuperacao_senha SET utilizado = TRUE WHERE usuario_id = ?',
-                [decoded.usuario_id]
+                [userId]
             );
 
-            logger.info('Senha redefinida com sucesso', { usuario_id: decoded.usuario_id });
+            logger.info('Senha redefinida com sucesso', { usuario_id: userId });
 
             res.json({
                 success: true,
