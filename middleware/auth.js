@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
       process.env.JWT_SECRET || 'fallback-secret-key-change-in-production'
     );
     
-    const [users] = await db.execute(
+    const [users] = await db.query(
       'SELECT id, nome, email, perfil, telefone, organizacao, provincia, distrito FROM usuarios WHERE id = ?',
       [decoded.id]
     );
