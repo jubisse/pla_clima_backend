@@ -652,7 +652,7 @@ router.get('/participante', authenticateToken, async (req, res) => {
     console.log('👤 Buscando sessões do participante:', req.user.id);
     
     // Buscar sessões em que o usuário está inscrito
-    const [sessoes] = await db.execute(`
+    const [sessoes] = await db.query(`
       SELECT 
         s.*,
         u.nome as facilitador_nome,
