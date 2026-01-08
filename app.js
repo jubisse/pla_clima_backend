@@ -333,7 +333,7 @@ const dashboardRoutes = require('./routes/dashboard');
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/usuario', usuarioRoutes);
-app.use('/api/sessoes', sessionsRoutes);
+app.use('/api/sessions', sessionsRoutes);
 app.use('/api/votacao', votingRoutes);
 app.use('/api/learning', learningRoutes);
 app.use('/api/admin', adminRoutes);
