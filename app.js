@@ -67,20 +67,16 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 200 : 1000,
-  message: {
-    success: false,
-    error: 'Muitas requisições. Tente novamente mais tarde.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: false,
-  // ✅ ADICIONE ESTA VALIDAÇÃO PARA O RENDER
-  validate: { xForwardedForHeader: false },
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for'] || req.ip || 'unknown';
-  }
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    // Corrigindo o erro de validação IPv6:
+    validate: { xForwardedForHeader: false }, 
+    handler: (req, res, next, options) => {
+        res.status(options.statusCode).json({
+            success: false,
+            message: "Muitas requisições. Tente novamente mais tarde."
+        });
+    }
 });
 
 app.use('/api/', limiter);
