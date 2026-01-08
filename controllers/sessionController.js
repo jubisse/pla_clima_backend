@@ -82,7 +82,7 @@ class SessionController {
 
             const sessaoId = sessaoResult.insertId;
 
-            // Inserir na tabela 'atividades_classificadas' 
+            // Inserir na tabela 'atividades_classificadas'
             if (atividades && atividades.length > 0) {
                 for (const atv of atividades) {
                     await connection.execute(
@@ -90,20 +90,17 @@ class SessionController {
                          (sessao_id, objectivo_estrategico, atividade, descricao, criterios, created_at, updated_at) 
                          VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
                         [
-                            sessaoId,                                // sessao_id (Não Nulo) [cite: 1]
-                            clean(atv.objetivoEstrategico, 'OE'),    // objectivo_estrategico [cite: 1]
-                            clean(atv.atividade, 'Atividade'),       // atividade [cite: 1]
-                            clean(atv.descricao, ''),                // descricao [cite: 2]
-                            JSON.stringify({ 
-                                sessao_id: sessaoId, 
-                                ...atv.dimensoes 
-                            })                                       // criterios (longtext) [cite: 2]
+                            sessaoId, 
+                            clean(atv.objetivoEstrategico, 'OE'), 
+                            clean(atv.atividade, 'Atividade'), 
+                            clean(atv.descricao, ''), 
+                            JSON.stringify({ sessao_id: sessaoId, ...atv.dimensoes })
                         ]
                     );
                 }
             }
 
-            // Inserir Perguntas do Teste
+            // Inserir Perguntas do Teste (Tabela: perguntas_teste)
             if (perguntas && perguntas.length > 0) {
                 for (const p of perguntas) {
                     await connection.execute(
@@ -111,7 +108,7 @@ class SessionController {
                          VALUES (?, ?, ?, ?, ?, ?, 1)`,
                         [
                             sessaoId, 
-                            clean(p.pergunta, 'Pergunta sem título'), 
+                            clean(p.pergunta, 'Pergunta'), 
                             JSON.stringify(clean(p.opcoes, {})), 
                             clean(p.resposta_correta, 'a').toLowerCase(), 
                             clean(p.modulo, 'Geral'), 
@@ -125,7 +122,28 @@ class SessionController {
         }).catch(next);
     }
 
-    // 3. Buscar perguntas de uma sessão para o mobile/participante
+    // 3. Buscar uma única sessão detalhada
+    static async getSessionById(req, res, next) {
+        await withConnection(async (connection) => {
+            const { id } = req.params;
+
+            const [sessoes] = await connection.execute(
+                `SELECT s.*, u.nome AS facilitador_nome FROM sessions s 
+                 LEFT JOIN usuarios u ON s.facilitador_id = u.id WHERE s.id = ?`, 
+                [id]
+            );
+
+            if (sessoes.length === 0) throw new AppError('Sessão não encontrada', 404);
+
+            const [atividades] = await connection.execute(
+                `SELECT * FROM atividades_classificadas WHERE sessao_id = ?`, [id]
+            );
+
+            res.json({ success: true, data: { ...sessoes[0], atividades } });
+        }).catch(next);
+    }
+
+    // 4. Buscar perguntas de uma sessão para o mobile
     static async getSessionQuestions(req, res, next) {
         await withConnection(async (connection) => {
             const { id } = req.params;
@@ -144,7 +162,7 @@ class SessionController {
         }).catch(next);
     }
 
-    // 4. Resultados em tempo real (Consolidado)
+    // 5. Resultados em tempo real
     static async getLiveResults(req, res, next) {
         await withConnection(async (connection) => {
             const { id } = req.params;
@@ -173,7 +191,7 @@ class SessionController {
         }).catch(next);
     }
 
-    // 5. Entrar na Sessão via PIN
+    // 6. Entrar na Sessão via PIN
     static async joinWithPin(req, res, next) {
         await withTransaction(async (connection) => {
             const { pin } = req.body;
@@ -196,7 +214,7 @@ class SessionController {
         }).catch(next);
     }
 
-    // 6. Submeter Votos do Usuário
+    // 7. Submeter Votos
     static async submitVotes(req, res, next) {
         await withTransaction(async (connection) => {
             const { sessao_id, votos } = req.body; 
@@ -208,25 +226,48 @@ class SessionController {
                      (usuario_id, atividade_id, sessao_id, pontuacao, prioridade_usuario, comentario, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE 
-                        pontuacao = VALUES(pontuacao), 
-                        prioridade_usuario = VALUES(prioridade_usuario),
-                        comentario = VALUES(comentario),
-                        updated_at = NOW()`,
-                    [
-                        usuario_id, 
-                        clean(voto.atividade_id), 
-                        clean(sessao_id), 
-                        clean(voto.pontuacao, 0), 
-                        clean(voto.prioridade), 
-                        clean(voto.comentario)
-                    ]
+                        pontuacao = VALUES(pontuacao), prioridade_usuario = VALUES(prioridade_usuario),
+                        comentario = VALUES(comentario), updated_at = NOW()`,
+                    [usuario_id, clean(voto.atividade_id), clean(sessao_id), clean(voto.pontuacao, 0), clean(voto.prioridade), clean(voto.comentario)]
                 );
             }
-            res.json({ success: true, message: 'Votos processados com sucesso' });
+            res.json({ success: true, message: 'Votos processados' });
         }).catch(next);
     }
 
-    // 7. Atualizar Progresso de Treinamento
+    // 8. Atualizar Sessão
+    static async updateSession(req, res, next) {
+        await withTransaction(async (connection) => {
+            const { id } = req.params;
+            const { titulo, descricao, estado, data, horario } = req.body;
+
+            await connection.execute(
+                `UPDATE sessions SET titulo = COALESCE(?, titulo), descricao = COALESCE(?, descricao), 
+                 estado = COALESCE(?, estado), data = COALESCE(?, data), horario = COALESCE(?, horario), updated_at = NOW()
+                 WHERE id = ?`,
+                [clean(titulo), clean(descricao), clean(estado), clean(data), clean(horario), id]
+            );
+
+            res.json({ success: true, message: 'Sessão atualizada' });
+        }).catch(next);
+    }
+
+    // 9. Eliminar Sessão
+    static async deleteSession(req, res, next) {
+        await withTransaction(async (connection) => {
+            const { id } = req.params;
+            await connection.execute(`DELETE FROM votos_usuario WHERE sessao_id = ?`, [id]);
+            await connection.execute(`DELETE FROM participantes_sessao WHERE sessao_id = ?`, [id]);
+            await connection.execute(`DELETE FROM perguntas_teste WHERE sessao_id = ?`, [id]);
+            await connection.execute(`DELETE FROM atividades_classificadas WHERE sessao_id = ?`, [id]);
+            const [result] = await connection.execute(`DELETE FROM sessions WHERE id = ?`, [id]);
+
+            if (result.affectedRows === 0) throw new AppError('Sessão não encontrada', 404);
+            res.json({ success: true, message: 'Sessão eliminada' });
+        }).catch(next);
+    }
+
+    // 10. Atualizar Progresso e Teste
     static async updateProgress(req, res, next) {
         await withConnection(async (connection) => {
             const { sessao_id, progresso } = req.body;
@@ -238,18 +279,15 @@ class SessionController {
         }).catch(next);
     }
 
-    // 8. Submeter resultado final do Teste
     static async submitTest(req, res, next) {
         await withConnection(async (connection) => {
             const { sessao_id, nota } = req.body;
             const aprovado = nota >= 70 ? 1 : 0;
-
             await connection.execute(
                 `UPDATE participantes_sessao SET teste_realizado = 1, teste_aprovado = ? 
                  WHERE sessao_id = ? AND usuario_id = ?`,
                 [aprovado, clean(sessao_id), req.user.id]
             );
-
             res.json({ success: true, aprovado: !!aprovado });
         }).catch(next);
     }
