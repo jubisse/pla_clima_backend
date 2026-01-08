@@ -3,10 +3,14 @@ const logger = require('../middleware/logger');
 const { AppError } = require('../middleware/errorHandler');
 
 /**
- * Função auxiliar para garantir que não enviamos 'undefined' para o MySQL
+ * Função auxiliar para garantir que não enviamos 'undefined' para o MySQL.
+ * O driver mysql2 exige null para campos vazios.
  */
 const clean = (val, fallback = null) => (val === undefined ? fallback : val);
 
+/**
+ * Gera um PIN alfanumérico de 6 caracteres (sem zeros ou 'O' para evitar confusão)
+ */
 const gerarNovoPin = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let pin = '';
@@ -18,7 +22,7 @@ const gerarNovoPin = () => {
 
 class SessionController {
     
-    // 1. Listar sessões
+    // 1. Listar sessões com filtros e paginação
     static async listSessions(req, res, next) {
         await withConnection(async (connection) => {
             const { page = 1, limit = 20, provincia = '', distrito = '', estado = '', tipo = '' } = req.query;
@@ -40,11 +44,15 @@ class SessionController {
 
             const [countResult] = await connection.execute(`SELECT COUNT(*) as total FROM sessions s ${whereClause}`, queryParams);
 
-            res.json({ success: true, data: sessions, pagination: { page: parseInt(page), total: countResult[0].total } });
+            res.json({ 
+                success: true, 
+                data: sessions, 
+                pagination: { page: parseInt(page), total: countResult[0].total } 
+            });
         }).catch(next);
     }
 
-    // 2. Criar nova sessão - CORREÇÃO DE PARAMETROS UNDEFINED AQUI
+    // 2. Criar nova sessão, Atividades e Perguntas
     static async createSession(req, res, next) {
         await withTransaction(async (connection) => {
             const {
@@ -54,7 +62,7 @@ class SessionController {
 
             const codigo_pin = gerarNovoPin();
 
-            // Inserir Sessão com tratamento de undefined
+            // Inserir na tabela 'sessions'
             const [sessaoResult] = await connection.execute(
                 `INSERT INTO sessions (titulo, descricao, data, horario, duracao, distrito, provincia, facilitador_id, estado, codigo_pin, tipo, created_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'agendada', ?, ?, NOW())`,
@@ -74,15 +82,22 @@ class SessionController {
 
             const sessaoId = sessaoResult.insertId;
 
-            // Inserir Atividades
+            // Inserir na tabela 'atividades_classificadas' 
             if (atividades && atividades.length > 0) {
                 for (const atv of atividades) {
                     await connection.execute(
-                        `INSERT INTO atividades_classificadas (objectivo_estrategico, atividade, criterios, created_at) VALUES (?, ?, ?, NOW())`,
+                        `INSERT INTO atividades_classificadas 
+                         (sessao_id, objectivo_estrategico, atividade, descricao, criterios, created_at, updated_at) 
+                         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
                         [
-                            clean(atv.objetivoEstrategico), 
-                            clean(atv.atividade), 
-                            JSON.stringify({ sessao_id: sessaoId })
+                            sessaoId,                                // sessao_id (Não Nulo) [cite: 1]
+                            clean(atv.objetivoEstrategico, 'OE'),    // objectivo_estrategico [cite: 1]
+                            clean(atv.atividade, 'Atividade'),       // atividade [cite: 1]
+                            clean(atv.descricao, ''),                // descricao [cite: 2]
+                            JSON.stringify({ 
+                                sessao_id: sessaoId, 
+                                ...atv.dimensoes 
+                            })                                       // criterios (longtext) [cite: 2]
                         ]
                     );
                 }
@@ -110,15 +125,82 @@ class SessionController {
         }).catch(next);
     }
 
-    // ... (restante dos métodos getSessionQuestions, getLiveResults, joinWithPin permanecem iguais, 
-    // mas com atenção ao clean() em entradas de formulário no submitVotes)
+    // 3. Buscar perguntas de uma sessão para o mobile/participante
+    static async getSessionQuestions(req, res, next) {
+        await withConnection(async (connection) => {
+            const { id } = req.params;
+            const [perguntas] = await connection.execute(
+                `SELECT id, pergunta, opcoes_json, resposta_correta, explicacao 
+                 FROM perguntas_teste WHERE sessao_id = ? AND ativa = 1`,
+                [id]
+            );
 
+            const data = perguntas.map(p => ({
+                ...p,
+                opcoes: JSON.parse(p.opcoes_json) 
+            }));
+
+            res.json({ success: true, data });
+        }).catch(next);
+    }
+
+    // 4. Resultados em tempo real (Consolidado)
+    static async getLiveResults(req, res, next) {
+        await withConnection(async (connection) => {
+            const { id } = req.params;
+            const query = `
+                SELECT 
+                    ac.id, ac.atividade, ac.objectivo_estrategico,
+                    AVG(vu.pontuacao) as media_pontuacao,
+                    AVG(vu.prioridade_usuario) as media_prioridade,
+                    COUNT(vu.id) as total_votos,
+                    GROUP_CONCAT(vu.comentario SEPARATOR '||') as comentarios
+                FROM atividades_classificadas ac
+                INNER JOIN votos_usuario vu ON ac.id = vu.atividade_id
+                WHERE vu.sessao_id = ?
+                GROUP BY ac.id
+                ORDER BY media_pontuacao DESC`;
+
+            const [results] = await connection.execute(query, [id]);
+            
+            const data = results.map(r => ({
+                ...r,
+                media_pontuacao: r.media_pontuacao ? parseFloat(r.media_pontuacao).toFixed(1) : "0.0",
+                comentarios: r.comentarios ? r.comentarios.split('||').filter(c => c && c !== 'NULL') : []
+            }));
+
+            res.json({ success: true, data });
+        }).catch(next);
+    }
+
+    // 5. Entrar na Sessão via PIN
+    static async joinWithPin(req, res, next) {
+        await withTransaction(async (connection) => {
+            const { pin } = req.body;
+            const usuarioId = req.user.id;
+
+            const [sessoes] = await connection.execute(
+                'SELECT id, titulo FROM sessions WHERE codigo_pin = ? AND estado != "finalizada"',
+                [pin.toUpperCase()]
+            );
+
+            if (sessoes.length === 0) throw new AppError('PIN inválido ou sessão encerrada', 404);
+
+            await connection.execute(
+                `INSERT INTO participantes_sessao (sessao_id, usuario_id, status) VALUES (?, ?, 'confirmado')
+                 ON DUPLICATE KEY UPDATE status = 'confirmado'`,
+                [sessoes[0].id, usuarioId]
+            );
+
+            res.json({ success: true, data: { sessao_id: sessoes[0].id, titulo: sessoes[0].titulo } });
+        }).catch(next);
+    }
+
+    // 6. Submeter Votos do Usuário
     static async submitVotes(req, res, next) {
         await withTransaction(async (connection) => {
             const { sessao_id, votos } = req.body; 
             const usuario_id = req.user.id;
-
-            if (!votos || !Array.isArray(votos)) throw new AppError('Dados de votação inválidos', 400);
 
             for (const voto of votos) {
                 await connection.execute(
@@ -133,14 +215,42 @@ class SessionController {
                     [
                         usuario_id, 
                         clean(voto.atividade_id), 
-                        clean(sessao_id, 1), 
+                        clean(sessao_id), 
                         clean(voto.pontuacao, 0), 
                         clean(voto.prioridade), 
                         clean(voto.comentario)
                     ]
                 );
             }
-            res.json({ success: true, message: 'Votação registada com sucesso!' });
+            res.json({ success: true, message: 'Votos processados com sucesso' });
+        }).catch(next);
+    }
+
+    // 7. Atualizar Progresso de Treinamento
+    static async updateProgress(req, res, next) {
+        await withConnection(async (connection) => {
+            const { sessao_id, progresso } = req.body;
+            await connection.execute(
+                `UPDATE participantes_sessao SET progresso_treinamento = ? WHERE sessao_id = ? AND usuario_id = ?`,
+                [clean(progresso, 0), clean(sessao_id), req.user.id]
+            );
+            res.json({ success: true });
+        }).catch(next);
+    }
+
+    // 8. Submeter resultado final do Teste
+    static async submitTest(req, res, next) {
+        await withConnection(async (connection) => {
+            const { sessao_id, nota } = req.body;
+            const aprovado = nota >= 70 ? 1 : 0;
+
+            await connection.execute(
+                `UPDATE participantes_sessao SET teste_realizado = 1, teste_aprovado = ? 
+                 WHERE sessao_id = ? AND usuario_id = ?`,
+                [aprovado, clean(sessao_id), req.user.id]
+            );
+
+            res.json({ success: true, aprovado: !!aprovado });
         }).catch(next);
     }
 }
