@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const sessionController = require('../controllers/SessionController');
+const sessionController = require('../controllers/sessionController');
 const { authenticateToken } = require('../middleware/auth');
 
 // ✅ LOGGER ROBUSTO INTEGRADO
