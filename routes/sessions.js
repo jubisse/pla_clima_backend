@@ -37,6 +37,34 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ✅ Atualizar dados/estado da sessão (Faltava esta rota!)
+router.patch('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body; // ex: { estado: 'concluida' }
+
+        // Construir a query dinamicamente com base nos campos enviados
+        const keys = Object.keys(updates);
+        if (keys.length === 0) return res.status(400).json({ success: false, message: 'Nenhum campo para atualizar' });
+
+        const setClause = keys.map(key => `${key} = ?`).join(', ');
+        const values = [...Object.values(updates), id];
+
+        const query = `UPDATE sessions SET ${setClause}, updated_at = NOW() WHERE id = ?`;
+        
+        const [result] = await db.query(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Sessão não encontrada' });
+        }
+
+        res.json({ success: true, message: 'Sessão atualizada com sucesso' });
+    } catch (error) {
+        logger.error('Erro ao atualizar sessão', { error: error.message, id });
+        res.status(500).json({ success: false, message: 'Erro ao atualizar sessão' });
+    }
+});
+
 // ==================== SISTEMA DE PIN E VOTAÇÃO ====================
 
 router.post('/join-pin', authenticateToken, sessionController.joinWithPin);
