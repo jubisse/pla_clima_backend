@@ -37,6 +37,43 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Rota: GET /api/sessions/stats/facilitador
+router.get('/stats/facilitador', authenticateToken, async (req, res) => {
+    try {
+        // Query para estatísticas globais
+        const [stats] = await db.query(`
+            SELECT 
+                COUNT(id) as totalSessoes,
+                SUM(participantes_previstos) as totalParticipantesPrevistos,
+                (SELECT COUNT(*) FROM participantes_sessao) as totalInscritos,
+                (SELECT COUNT(*) FROM respostas_votacao) as totalVotos
+            FROM sessions
+        `);
+
+        // Query para sessões recentes
+        const [sessoesRecentes] = await db.query(`
+            SELECT id, titulo, data, status, participantes_previstos 
+            FROM sessions 
+            ORDER BY data DESC LIMIT 5
+        `);
+
+        res.json({ 
+            success: true, 
+            data: {
+                totalSessoes: stats[0].totalSessoes || 0,
+                totalParticipantes: stats[0].totalInscritos || 0,
+                taxaParticipacao: stats[0].totalParticipantesPrevistos > 0 
+                    ? Math.round((stats[0].totalInscritos / stats[0].totalParticipantesPrevistos) * 100) 
+                    : 0,
+                votosRecebidos: stats[0].totalVotos || 0,
+                sessoesRecentes
+            } 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Erro ao carregar estatísticas' });
+    }
+});
+
 // ✅ Atualizar dados/estado da sessão (Faltava esta rota!)
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
