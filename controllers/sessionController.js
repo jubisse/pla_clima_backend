@@ -116,7 +116,8 @@ class SessionController {
     }
 
 static async getLiveResults(req, res, next) {
-    try {
+    // Usamos withConnection para garantir que a conexão seja aberta e fechada corretamente
+    await withConnection(async (connection) => {
         const { id } = req.params; // ID da Sessão
 
         const query = `
@@ -134,18 +135,17 @@ static async getLiveResults(req, res, next) {
             GROUP BY ac.id
             ORDER BY media_pontuacao DESC, media_prioridade ASC`;
 
-        const [results] = await db.query(query, [id]);
+        // Alterado de db.query para connection.execute (padrão do seu arquivo)
+        const [results] = await connection.execute(query, [id]);
         
         const data = results.map(r => ({
             ...r,
-            media_pontuacao: parseFloat(r.media_pontuacao).toFixed(1),
+            media_pontuacao: r.media_pontuacao ? parseFloat(r.media_pontuacao).toFixed(1) : "0.0",
             comentarios: r.comentarios ? r.comentarios.split('||').filter(c => c && c !== 'NULL') : []
         }));
 
         res.json({ success: true, data });
-    } catch (error) {
-        next(error);
-    }
+    }).catch(next); // Importante capturar o erro para o middleware de erro
 }
     
     // 4. Entrar na Sessão via PIN (Mantido)
