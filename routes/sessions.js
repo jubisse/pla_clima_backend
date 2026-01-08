@@ -126,10 +126,19 @@ router.delete('/:sessaoId/participantes/:usuarioId', authenticateToken, async (r
     }
 });
 
-// ==================== RESULTADOS E HEALTH CHECK ====================
+// ==================== VOTAÇÃO E RESULTADOS ====================
 
-// ✅ OBTER RESULTADOS DA VOTAÇÃO
-router.get('/:id/results', authenticateToken, sessionController.getSessionResults);
+// ✅ SUBMETER VOTOS (Esta rota estava faltando no seu arquivo de rotas!)
+router.post('/submit-votes', authenticateToken, sessionController.submitVotes);
+
+// ✅ OBTER RESULTADOS EM TEMPO REAL (Painel do Facilitador)
+// Corrigido para garantir que o callback exista
+router.get('/:id/live-results', authenticateToken, sessionController.getLiveResults);
+
+// ✅ OBTER RESULTADOS GERAIS (Consolidado)
+// Verifique se 'getSessionResults' existe no controller, 
+// caso contrário, use 'getLiveResults' também aqui.
+router.get('/:id/results', authenticateToken, sessionController.getLiveResults);
 
 // ✅ HEALTH CHECK
 router.get('/status/health', async (req, res) => {
