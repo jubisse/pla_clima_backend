@@ -100,15 +100,33 @@ router.get('/me/participating', authenticateToken, async (req, res) => {
 });
 
 // ✅ Listar participantes (Frontend usa: /api/sessions/:id/participants)
-// Ajustado de '/participantes' para '/participants' para bater com o SessionService.ts
 router.get('/:id/participants', authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT ps.*, u.nome, u.email, u.organizacao, u.provincia, u.distrito
+            SELECT 
+                ps.id, ps.sessao_id, ps.usuario_id, ps.status, ps.data_inscricao,
+                u.nome, u.email, u.organizacao, u.provincia, u.distrito
             FROM participantes_sessao ps
             JOIN usuarios u ON ps.usuario_id = u.id
             WHERE ps.sessao_id = ?`, [req.params.id]);
-        res.json({ success: true, data: rows });
+
+        // Mapeia os campos planos para o objeto 'usuario' que o frontend espera
+        const formatados = rows.map(row => ({
+            id: row.id,
+            sessao_id: row.sessao_id,
+            usuario_id: row.usuario_id,
+            status: row.status,
+            data_inscricao: row.data_inscricao,
+            usuario: {
+                nome: row.nome,
+                email: row.email,
+                organizacao: row.organizacao,
+                provincia: row.provincia,
+                distrito: row.distrito
+            }
+        }));
+
+        res.json({ success: true, data: formatados });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Erro ao listar participantes' });
     }
