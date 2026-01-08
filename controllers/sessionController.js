@@ -2,8 +2,21 @@ const { withConnection, withTransaction } = require('../utils/database');
 const logger = require('../middleware/logger');
 const { AppError } = require('../middleware/errorHandler');
 
+/**
+ * Função auxiliar para gerar PIN de 6 caracteres (sem O, 0, I, 1 para evitar confusão)
+ */
+const gerarNovoPin = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let pin = '';
+    for (let i = 0; i < 6; i++) {
+        pin += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pin;
+};
+
 class SessionController {
-    // Listar sessões com paginação e filtros
+    
+    // 1. Listar sessões com paginação e filtros
     static async listSessions(req, res, next) {
         await withConnection(async (connection) => {
             const { 
@@ -16,42 +29,17 @@ class SessionController {
             } = req.query;
             
             const offset = (page - 1) * limit;
-
             let whereClause = 'WHERE 1=1';
             let queryParams = [];
 
-            if (provincia) {
-                whereClause += ' AND s.provincia = ?';
-                queryParams.push(provincia);
-            }
-
-            if (distrito) {
-                whereClause += ' AND s.distrito = ?';
-                queryParams.push(distrito);
-            }
-
-            if (estado) {
-                whereClause += ' AND s.estado = ?';
-                queryParams.push(estado);
-            }
-
-            if (tipo) {
-                whereClause += ' AND s.tipo = ?';
-                queryParams.push(tipo);
-            }
+            if (provincia) { whereClause += ' AND s.provincia = ?'; queryParams.push(provincia); }
+            if (distrito) { whereClause += ' AND s.distrito = ?'; queryParams.push(distrito); }
+            if (estado) { whereClause += ' AND s.estado = ?'; queryParams.push(estado); }
+            if (tipo) { whereClause += ' AND s.tipo = ?'; queryParams.push(tipo); }
 
             const [sessions] = await connection.execute(
-                `SELECT 
-                    s.id, s.titulo, s.descricao, s.data, s.horario, s.duracao,
-                    s.distrito, s.provincia, s.tipo, s.estado, s.created_at,
-                    u.nome AS facilitador_nome,
-                    s.participantes_previstos,
-                    s.participantes_confirmados,
-                    (
-                        SELECT COUNT(*) 
-                        FROM atividades_classificadas ac 
-                        WHERE JSON_EXTRACT(ac.criterios, '$.sessao_id') = s.id
-                    ) AS total_atividades
+                `SELECT s.*, u.nome AS facilitador_nome,
+                (SELECT COUNT(*) FROM atividades_classificadas ac WHERE JSON_EXTRACT(ac.criterios, '$.sessao_id') = s.id) AS total_atividades
                 FROM sessions s
                 LEFT JOIN usuarios u ON s.facilitador_id = u.id
                 ${whereClause}
@@ -60,378 +48,144 @@ class SessionController {
                 [...queryParams, parseInt(limit), offset]
             );
 
-            // Contar total
             const [countResult] = await connection.execute(
                 `SELECT COUNT(*) as total FROM sessions s ${whereClause}`,
                 queryParams
             );
 
-            const total = countResult[0].total;
-
-            logger.info('Sessões listadas', { total, page });
-
             res.json({
                 success: true,
                 data: sessions,
-                pagination: {
-                    page: parseInt(page),
-                    limit: parseInt(limit),
-                    total,
-                    pages: Math.ceil(total / limit)
-                }
+                pagination: { page: parseInt(page), total: countResult[0].total }
             });
         }).catch(next);
     }
 
-    // Obter sessão específica
-    static async getSession(req, res, next) {
-        await withConnection(async (connection) => {
-            const { id } = req.params;
-
-            logger.info('Buscando sessão específica', { sessionId: id });
-
-            const [sessions] = await connection.execute(
-                `SELECT 
-                    s.*,
-                    u.nome as facilitador_nome,
-                    u.email as facilitador_email
-                FROM sessions s
-                LEFT JOIN usuarios u ON s.facilitador_id = u.id
-                WHERE s.id = ?`,
-                [id]
-            );
-
-            if (sessions.length === 0) {
-                throw new AppError('Sessão não encontrada', 404);
-            }
-
-            res.json({
-                success: true,
-                data: sessions[0]
-            });
-        }).catch(next);
-    }
-
-    // Criar nova sessão
+    // 2. Criar nova sessão (Gera PIN automaticamente)
     static async createSession(req, res, next) {
         await withTransaction(async (connection) => {
             const {
-                titulo,
-                descricao,
-                data,
-                horario,
-                duracao,
-                distrito,
-                provincia,
-                facilitador_id,
-                participantes_previstos,
-                tipo,
-                localizacao,
-                link_virtual,
-                observacoes,
-                atividades = []
+                titulo, descricao, data, horario, duracao, distrito, provincia,
+                facilitador_id, participantes_previstos, tipo, localizacao,
+                link_virtual, observacoes, atividades = []
             } = req.body;
 
-            logger.info('Criando nova sessão', { 
-                titulo, 
-                facilitador_id: facilitador_id || req.user.id,
-                atividadesCount: atividades.length 
-            });
+            const codigo_pin = gerarNovoPin();
 
-            // Inserir sessão
             const [sessaoResult] = await connection.execute(
                 `INSERT INTO sessions (
                     titulo, descricao, data, horario, duracao, distrito, provincia,
                     facilitador_id, participantes_previstos, tipo, localizacao,
-                    link_virtual, observacoes, estado, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'agendada', NOW())`,
+                    link_virtual, observacoes, estado, codigo_pin, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'agendada', ?, NOW())`,
                 [
-                    titulo,
-                    descricao || '',
-                    data,
-                    horario,
-                    duracao || 2,
-                    distrito,
-                    provincia,
-                    facilitador_id || req.user.id,
-                    participantes_previstos || 20,
-                    tipo || 'presencial',
-                    localizacao || '',
-                    link_virtual || '',
-                    observacoes || ''
+                    titulo, descricao || '', data, horario, duracao || 2, distrito, provincia,
+                    facilitador_id || req.user.id, participantes_previstos || 20, 
+                    tipo || 'presencial', localizacao || '', link_virtual || '', 
+                    observacoes || '', codigo_pin
                 ]
             );
 
             const sessaoId = sessaoResult.insertId;
 
-            // Inserir atividades se fornecidas
-            if (atividades && atividades.length > 0) {
-                logger.info(`Inserindo ${atividades.length} atividades para sessão ${sessaoId}`);
-                
-                for (let i = 0; i < atividades.length; i++) {
-                    const atividade = atividades[i];
-                    
+            if (atividades.length > 0) {
+                for (const atividade of atividades) {
                     await connection.execute(
                         `INSERT INTO atividades_classificadas (
-                            objectivo_estrategico, atividade, descricao, criterios,
-                            prioridade, tempo_impacto, capex, risco_maladaptacao, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+                            objectivo_estrategico, atividade, descricao, criterios, created_at
+                        ) VALUES (?, ?, ?, ?, NOW())`,
                         [
-                            atividade.objetivoEstrategico || 'OE - Não definido',
-                            atividade.atividade,
-                            atividade.descricao || '',
-                            JSON.stringify({
-                                indicadoresSelecionados: atividade.indicadoresSelecionados || [],
-                                sessao_id: sessaoId
-                            }),
-                            atividade.prioridade || 'Média',
-                            atividade.tempo_impacto || 'Médio',
-                            atividade.capex || 'Médio',
-                            atividade.risco_maladaptacao || 'Baixo'
+                            atividade.objetivoEstrategico, atividade.atividade, atividade.descricao || '',
+                            JSON.stringify({ indicadoresSelecionados: atividade.indicadoresSelecionados || [], sessao_id: sessaoId })
                         ]
                     );
                 }
             }
 
-            // Buscar sessão criada com join
-            const [sessoes] = await connection.execute(
-                `SELECT 
-                    s.*,
-                    u.nome as facilitador_nome
-                 FROM sessions s
-                 LEFT JOIN usuarios u ON s.facilitador_id = u.id
-                 WHERE s.id = ?`,
-                [sessaoId]
-            );
-
-            const sessaoCriada = sessoes[0];
-
-            logger.info('Sessão criada com sucesso', { 
-                id: sessaoCriada.id, 
-                titulo: sessaoCriada.titulo,
-                estado: sessaoCriada.estado 
-            });
-
             res.status(201).json({
                 success: true,
-                message: `Sessão criada com ${atividades.length} atividades`,
-                data: sessaoCriada
+                message: `Sessão criada com PIN: ${codigo_pin}`,
+                data: { id: sessaoId, codigo_pin }
             });
         }).catch(next);
     }
 
-    // Atualizar sessão
-    static async updateSession(req, res, next) {
-        await withConnection(async (connection) => {
-            const { id } = req.params;
-            const updates = req.body;
-
-            logger.info('Atualizando sessão', { sessionId: id, updates: Object.keys(updates) });
-
-            // Remover campos que não devem ser atualizados
-            delete updates.id;
-            delete updates.created_at;
-            delete updates.facilitador_nome;
-
-            if (Object.keys(updates).length === 0) {
-                throw new AppError('Nenhum campo para atualizar', 400);
-            }
-
-            const setClause = Object.keys(updates)
-                .map(key => `${key} = ?`)
-                .join(', ');
-            const values = [...Object.values(updates), id];
-
-            const [result] = await connection.execute(
-                `UPDATE sessions SET ${setClause}, updated_at = NOW() WHERE id = ?`,
-                values
-            );
-
-            if (result.affectedRows === 0) {
-                throw new AppError('Sessão não encontrada', 404);
-            }
-
-            // Buscar sessão atualizada
-            const [updatedSessao] = await connection.execute(
-                'SELECT * FROM sessions WHERE id = ?',
-                [id]
-            );
-
-            res.json({
-                success: true,
-                message: 'Sessão atualizada com sucesso',
-                data: updatedSessao[0]
-            });
-        }).catch(next);
-    }
-
-    // Excluir sessão
-    static async deleteSession(req, res, next) {
+    // 3. Entrar na Sessão via PIN (Cria vínculo na tabela participantes_sessao)
+    static async joinWithPin(req, res, next) {
         await withTransaction(async (connection) => {
-            const { id } = req.params;
+            const { pin } = req.body;
+            const usuarioId = req.user.id;
 
-            logger.info('Excluindo sessão', { sessionId: id });
-
-            // Verificar se existem atividades associadas
-            const [atividades] = await connection.execute(
-                `SELECT COUNT(*) as total 
-                 FROM atividades_classificadas 
-                 WHERE JSON_EXTRACT(criterios, '$.sessao_id') = ?`,
-                [id]
+            const [sessoes] = await connection.execute(
+                'SELECT id, titulo FROM sessions WHERE codigo_pin = ? AND estado != "finalizada"',
+                [pin.toUpperCase()]
             );
 
-            if (atividades[0].total > 0) {
-                // Opcional: excluir atividades associadas ou lançar erro
-                await connection.execute(
-                    `DELETE FROM atividades_classificadas 
-                     WHERE JSON_EXTRACT(criterios, '$.sessao_id') = ?`,
-                    [id]
-                );
-                logger.info(`${atividades[0].total} atividades excluídas da sessão ${id}`);
-            }
+            if (sessoes.length === 0) throw new AppError('PIN inválido ou sessão encerrada', 404);
 
-            const [result] = await connection.execute(
-                'DELETE FROM sessions WHERE id = ?',
-                [id]
+            const sessaoId = sessoes[0].id;
+
+            // Insere ou atualiza para 'confirmado'
+            await connection.execute(
+                `INSERT INTO participantes_sessao (sessao_id, usuario_id, status, progresso_treinamento) 
+                 VALUES (?, ?, 'confirmado', 0)
+                 ON DUPLICATE KEY UPDATE status = 'confirmado'`,
+                [sessaoId, usuarioId]
             );
 
-            if (result.affectedRows === 0) {
-                throw new AppError('Sessão não encontrada', 404);
-            }
-
-            logger.info('Sessão excluída com sucesso', { sessionId: id });
-
-            res.json({
-                success: true,
-                message: 'Sessão excluída com sucesso'
-            });
+            res.json({ success: true, data: { sessao_id: sessaoId, titulo: sessoes[0].titulo } });
         }).catch(next);
     }
 
-    // Obter atividades da sessão
-    static async getSessionActivities(req, res, next) {
+    // 4. Atualizar Progresso de Treinamento
+    static async updateProgress(req, res, next) {
         await withConnection(async (connection) => {
-            const { id } = req.params;
+            const { sessao_id, progresso } = req.body;
+            const usuarioId = req.user.id;
 
-            logger.info('Buscando atividades da sessão', { sessionId: id });
-
-            const [atividades] = await connection.execute(
-                `SELECT 
-                    ac.*
-                 FROM atividades_classificadas ac
-                 WHERE JSON_EXTRACT(ac.criterios, '$.sessao_id') = ?
-                 ORDER BY ac.created_at`,
-                [id]
+            await connection.execute(
+                `UPDATE participantes_sessao SET progresso_treinamento = ? 
+                 WHERE sessao_id = ? AND usuario_id = ?`,
+                [progresso, sessao_id, usuarioId]
             );
 
-            // Processar critérios JSON
-            const atividadesProcessadas = atividades.map(atividade => {
-                let criterios = {};
-                try {
-                    if (typeof atividade.criterios === 'string') {
-                        criterios = JSON.parse(atividade.criterios);
-                    } else {
-                        criterios = atividade.criterios;
-                    }
-                } catch (error) {
-                    logger.error('Erro ao parsear critérios:', error);
-                    criterios = { sessao_id: id, indicadoresSelecionados: [] };
-                }
-
-                return {
-                    ...atividade,
-                    criterios: criterios
-                };
-            });
-
-            res.json({
-                success: true,
-                data: atividadesProcessadas,
-                total: atividadesProcessadas.length
-            });
+            res.json({ success: true, message: 'Progresso atualizado' });
         }).catch(next);
     }
 
-    // Obter resultados da sessão
+    // 5. Finalizar Teste (Trava para Votação)
+    static async submitTest(req, res, next) {
+        await withConnection(async (connection) => {
+            const { sessao_id, nota } = req.body;
+            const usuarioId = req.user.id;
+            const aprovado = nota >= 70 ? 1 : 0;
+
+            await connection.execute(
+                `UPDATE participantes_sessao SET 
+                 teste_realizado = 1, teste_aprovado = ? 
+                 WHERE sessao_id = ? AND usuario_id = ?`,
+                [aprovado, sessao_id, usuarioId]
+            );
+
+            res.json({ success: true, aprovado: !!aprovado });
+        }).catch(next);
+    }
+
+    // 6. Obter Resultados e Estatísticas (Votos)
     static async getSessionResults(req, res, next) {
         await withConnection(async (connection) => {
             const { id } = req.params;
 
-            logger.info('Buscando resultados da sessão', { sessionId: id });
-
-            // Buscar a sessão
-            const [sessoes] = await connection.execute(
-                'SELECT id, titulo, descricao, data, provincia, distrito FROM sessions WHERE id = ?',
-                [id]
-            );
-
-            if (sessoes.length === 0) {
-                throw new AppError('Sessão não encontrada', 404);
-            }
-
-            const sessao = sessoes[0];
-
-            // Buscar atividades da sessão com estatísticas de votação
             const [atividades] = await connection.execute(
-                `SELECT 
-                    ac.id,
-                    ac.objectivo_estrategico,
-                    ac.atividade,
-                    ac.descricao,
-                    ac.criterios,
-                    ac.prioridade,
-                    ac.tempo_impacto,
-                    ac.capex,
-                    ac.risco_maladaptacao,
-                    COUNT(vu.id) as total_votos,
-                    AVG(vu.pontuacao) as media_pontuacao,
-                    AVG(vu.prioridade_usuario) as media_prioridade
+                `SELECT ac.*, COUNT(vu.id) as total_votos, AVG(vu.pontuacao) as media_pontuacao
                 FROM atividades_classificadas ac
                 LEFT JOIN votos_usuario vu ON ac.id = vu.atividade_id
                 WHERE JSON_EXTRACT(ac.criterios, '$.sessao_id') = ?
-                GROUP BY ac.id
-                ORDER BY media_pontuacao DESC`,
+                GROUP BY ac.id ORDER BY media_pontuacao DESC`,
                 [id]
             );
 
-            // Processar atividades
-            const atividadesProcessadas = atividades.map(atividade => {
-                let criterios;
-                try {
-                    if (typeof atividade.criterios === 'string') {
-                        criterios = JSON.parse(atividade.criterios);
-                    } else {
-                        criterios = atividade.criterios;
-                    }
-                } catch (error) {
-                    criterios = {};
-                }
-
-                return {
-                    ...atividade,
-                    criterios: criterios,
-                    media_pontuacao: atividade.media_pontuacao ? parseFloat(atividade.media_pontuacao) : 0,
-                    media_prioridade: atividade.media_prioridade ? parseFloat(atividade.media_prioridade) : 0
-                };
-            });
-
-            // Estatísticas gerais
-            const estatisticas = {
-                total_atividades: atividadesProcessadas.length,
-                total_votos: atividadesProcessadas.reduce((sum, a) => sum + a.total_votos, 0),
-                media_geral: atividadesProcessadas.length > 0 
-                    ? atividadesProcessadas.reduce((sum, a) => sum + a.media_pontuacao, 0) / atividadesProcessadas.length 
-                    : 0
-            };
-
-            res.json({
-                success: true,
-                data: {
-                    sessao,
-                    estatisticas,
-                    atividades: atividadesProcessadas
-                }
-            });
+            res.json({ success: true, data: atividades });
         }).catch(next);
     }
 }
