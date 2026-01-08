@@ -24,13 +24,13 @@ const logger = {
 
 // ==================== ROTAS DE SESSÕES (OPERACIONAIS) ====================
 
-// ✅ LISTAR SESSÕES (Com filtros de Província, Distrito, Estado e Tipo)
+// ✅ LISTAR SESSÕES
 router.get('/', authenticateToken, sessionController.listSessions);
 
-// ✅ CRIAR NOVA SESSÃO (Gera PIN automaticamente e processa atividades)
+// ✅ CRIAR NOVA SESSÃO (Processa Atividades e Perguntas do Teste)
 router.post('/', authenticateToken, sessionController.createSession);
 
-// ✅ OBTER SESSÃO ESPECÍFICA (Detalhes completos)
+// ✅ OBTER SESSÃO ESPECÍFICA
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -51,20 +51,24 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ==================== SISTEMA DE PIN E TREINAMENTO ====================
+// ==================== SISTEMA DE PIN, TREINAMENTO E TESTE ====================
 
-// ✅ ENTRAR NA SESSÃO VIA PIN (Cria vínculo na tabela participantes_sessao)
+// ✅ ENTRAR NA SESSÃO VIA PIN
 router.post('/join-pin', authenticateToken, sessionController.joinWithPin);
 
-// ✅ ATUALIZAR PROGRESSO DE TREINAMENTO (Percentagem de vídeo/slides vistos)
+// ✅ BUSCAR PERGUNTAS DO TESTE (Dinâmicas da tabela perguntas_teste)
+// Esta rota alimenta o componente TesteConhecimento.tsx no Frontend
+router.get('/:id/questions', authenticateToken, sessionController.getSessionQuestions);
+
+// ✅ ATUALIZAR PROGRESSO DE TREINAMENTO
 router.post('/update-progress', authenticateToken, sessionController.updateProgress);
 
-// ✅ SUBMETER TESTE (Valida a nota e liberta o status para votar)
+// ✅ SUBMETER TESTE (Valida a aprovação)
 router.post('/submit-test', authenticateToken, sessionController.submitTest);
 
 // ==================== GESTÃO DE PARTICIPANTES ====================
 
-// ✅ LISTAR SESSÕES DO UTILIZADOR LOGADO (Onde ele é participante)
+// ✅ LISTAR SESSÕES DO UTILIZADOR LOGADO
 router.get('/me/participating', authenticateToken, async (req, res) => {
     try {
         const query = `
@@ -82,7 +86,7 @@ router.get('/me/participating', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ LISTAR TODOS OS PARTICIPANTES DE UMA SESSÃO (Para o Facilitador)
+// ✅ LISTAR TODOS OS PARTICIPANTES DE UMA SESSÃO
 router.get('/:id/participantes', authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.query(`
@@ -97,7 +101,7 @@ router.get('/:id/participantes', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ ATUALIZAR STATUS DO PARTICIPANTE (Confirmado, Pendente, Cancelado)
+// ✅ ATUALIZAR STATUS DO PARTICIPANTE
 router.patch('/:sessaoId/participantes/:usuarioId', authenticateToken, async (req, res) => {
     try {
         const { status } = req.body;
@@ -124,7 +128,7 @@ router.delete('/:sessaoId/participantes/:usuarioId', authenticateToken, async (r
 
 // ==================== RESULTADOS E HEALTH CHECK ====================
 
-// ✅ OBTER RESULTADOS DA VOTAÇÃO DA SESSÃO
+// ✅ OBTER RESULTADOS DA VOTAÇÃO
 router.get('/:id/results', authenticateToken, sessionController.getSessionResults);
 
 // ✅ HEALTH CHECK
