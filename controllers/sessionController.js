@@ -115,6 +115,39 @@ class SessionController {
         }).catch(next);
     }
 
+static async getLiveResults(req, res, next) {
+    try {
+        const { id } = req.params; // ID da Sessão
+
+        const query = `
+            SELECT 
+                ac.id,
+                ac.atividade,
+                ac.objectivo_estrategico,
+                AVG(vu.pontuacao) as media_pontuacao,
+                AVG(vu.prioridade_usuario) as media_prioridade,
+                COUNT(vu.id) as total_votos,
+                GROUP_CONCAT(vu.comentario SEPARATOR '||') as comentarios
+            FROM atividades_classificadas ac
+            INNER JOIN votos_usuario vu ON ac.id = vu.atividade_id
+            WHERE vu.sessao_id = ?
+            GROUP BY ac.id
+            ORDER BY media_pontuacao DESC, media_prioridade ASC`;
+
+        const [results] = await db.query(query, [id]);
+        
+        const data = results.map(r => ({
+            ...r,
+            media_pontuacao: parseFloat(r.media_pontuacao).toFixed(1),
+            comentarios: r.comentarios ? r.comentarios.split('||').filter(c => c && c !== 'NULL') : []
+        }));
+
+        res.json({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+}
+    
     // 4. Entrar na Sessão via PIN (Mantido)
     static async joinWithPin(req, res, next) {
         await withTransaction(async (connection) => {
