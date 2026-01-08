@@ -149,6 +149,37 @@ class SessionController {
             res.json({ success: true });
         }).catch(next);
     }
+    // submit
+    static async submitVotes(req, res, next) {
+    await withTransaction(async (connection) => {
+        const { sessao_id, votos } = req.body; 
+        // votos esperado: [{ atividade_id: 1, pontuacao: 8, prioridade: 1, comentario: "..." }, ...]
+        const usuario_id = req.user.id;
+
+        for (const voto of votos) {
+            await connection.execute(
+                `INSERT INTO votos_usuario 
+                 (usuario_id, atividade_id, sessao_id, pontuacao, prioridade_usuario, comentario, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE 
+                    pontuacao = VALUES(pontuacao), 
+                    prioridade_usuario = VALUES(prioridade_usuario),
+                    comentario = VALUES(comentario),
+                    updated_at = NOW()`,
+                [
+                    usuario_id, 
+                    voto.atividade_id, 
+                    sessao_id || 1, 
+                    voto.pontuacao, 
+                    voto.prioridade, 
+                    voto.comentario || null
+                ]
+            );
+        }
+
+        res.json({ success: true, message: 'Votação registada com sucesso!' });
+    }).catch(next);
+}
 
     // 6. Submeter Teste
     static async submitTest(req, res, next) {
