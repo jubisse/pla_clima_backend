@@ -55,8 +55,8 @@ const corsOptions = {
   exposedHeaders: ['Authorization']
 };
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(cors());
+app.options('*', cors());
 
 // Trust proxy para Render
 app.set("trust proxy", 1);
