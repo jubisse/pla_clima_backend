@@ -3,278 +3,114 @@ const router = express.Router();
 const db = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 
-// Listar módulos de aprendizagem
+// 1. Listar módulos com status de conclusão para o usuário logado
 router.get('/modulos', authenticateToken, async (req, res) => {
   try {
+    const usuario_id = req.user.id;
+
+    // Join para saber se o usuário já concluiu o módulo
     const [modulos] = await db.query(`
-      SELECT * FROM modulos_aprendizagem 
-      WHERE ativo = 1 
-      ORDER BY ordem ASC
-    `);
+      SELECT 
+        m.*, 
+        IF(p.concluido, CAST(1 AS UNSIGNED), CAST(0 AS UNSIGNED)) as concluido
+      FROM modulos_aprendizagem m
+      LEFT JOIN progresso_aprendizagem p ON m.id = p.modulo_id AND p.usuario_id = ?
+      WHERE m.ativo = 1 
+      ORDER BY m.ordem ASC
+    `, [usuario_id]);
 
     res.json({
       success: true,
       data: modulos
     });
-
   } catch (error) {
     console.error('Erro ao listar módulos:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
   }
 });
 
-// Obter módulo específico
-router.get('/modulos/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const [modulos] = await db.query(
-      'SELECT * FROM modulos_aprendizagem WHERE id = ? AND ativo = 1',
-      [id]
-    );
-
-    if (modulos.length === 0) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Módulo não encontrado' 
-      });
-    }
-
-    res.json({
-      success: true,
-      data: modulos[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao obter módulo:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
-  }
-});
-
-// Obter progresso do usuário
-router.get('/progresso', authenticateToken, async (req, res) => {
-  try {
-    const usuario_id = req.user.id;
-
-    const [progresso] = await db.query(`
-      SELECT 
-        pa.modulo_id,
-        ma.titulo,
-        ma.ordem,
-        pa.concluido,
-        pa.progresso,
-        pa.atualizado_em
-      FROM progresso_aprendizagem pa
-      INNER JOIN modulos_aprendizagem ma ON pa.modulo_id = ma.id
-      WHERE pa.usuario_id = ?
-      ORDER BY ma.ordem ASC
-    `, [usuario_id]);
-
-    // Calcular progresso geral
-    const [totalModulos] = await db.query(
-      'SELECT COUNT(*) as total FROM modulos_aprendizagem WHERE ativo = 1'
-    );
-    
-    const modulosConcluidos = progresso.filter(p => p.concluido).length;
-    const progressoPercentual = Math.round((modulosConcluidos / totalModulos[0].total) * 100);
-
-    res.json({
-      success: true,
-      data: {
-        progressoDetalhado: progresso,
-        resumo: {
-          modulosConcluidos,
-          totalModulos: totalModulos[0].total,
-          progressoPercentual
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Erro ao obter progresso:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
-  }
-});
-
-// Atualizar progresso do módulo
+// 2. Atualizar progresso (Chamado ao clicar em "Concluir Módulo")
 router.post('/progresso', authenticateToken, async (req, res) => {
   try {
-    const { modulo_id, concluido = false, progresso = 0 } = req.body;
+    const { modulo_id, concluido = true, progresso = 100 } = req.body;
     const usuario_id = req.user.id;
 
-    // Verificar se o módulo existe
-    const [modulo] = await db.query(
-      'SELECT * FROM modulos_aprendizagem WHERE id = ? AND ativo = 1',
-      [modulo_id]
-    );
+    // Upsert (Insert or Update) do progresso
+    const query = `
+      INSERT INTO progresso_aprendizagem (usuario_id, modulo_id, concluido, progresso)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE concluido = VALUES(concluido), progresso = VALUES(progresso), atualizado_em = CURRENT_TIMESTAMP
+    `;
 
-    if (modulo.length === 0) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Módulo não encontrado' 
-      });
-    }
+    await db.query(query, [usuario_id, modulo_id, concluido, progresso]);
 
-    // Verificar se já existe progresso
-    const [progressoExistente] = await db.query(
-      'SELECT * FROM progresso_aprendizagem WHERE usuario_id = ? AND modulo_id = ?',
-      [usuario_id, modulo_id]
-    );
-
-    if (progressoExistente.length > 0) {
-      // Atualizar progresso existente
-      await db.query(
-        'UPDATE progresso_aprendizagem SET concluido = ?, progresso = ?, atualizado_em = CURRENT_TIMESTAMP WHERE usuario_id = ? AND modulo_id = ?',
-        [concluido, progresso, usuario_id, modulo_id]
-      );
-    } else {
-      // Inserir novo progresso
-      await db.query(
-        'INSERT INTO progresso_aprendizagem (usuario_id, modulo_id, concluido, progresso) VALUES (?, ?, ?, ?)',
-        [usuario_id, modulo_id, concluido, progresso]
-      );
-    }
-
-    res.json({
-      success: true,
-      message: 'Progresso atualizado com sucesso'
-    });
-
+    res.json({ success: true, message: 'Progresso guardado' });
   } catch (error) {
     console.error('Erro ao atualizar progresso:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
+    res.status(500).json({ success: false, message: 'Erro no servidor' });
   }
 });
 
-// Obter perguntas do teste
+// 3. Obter perguntas do teste (Sincronizado com o Frontend)
 router.get('/teste/perguntas', authenticateToken, async (req, res) => {
   try {
-    const { modulo, dificuldade, limit = 10 } = req.query;
+    // Busca perguntas aleatórias para o teste
+    const [perguntas] = await db.query(
+      'SELECT id, pergunta, opcoes_json, dificuldade FROM perguntas_teste WHERE ativa = 1 ORDER BY RAND() LIMIT 10'
+    );
 
-    let query = 'SELECT * FROM perguntas_teste WHERE ativa = 1';
-    let params = [];
-
-    if (modulo) {
-      query += ' AND modulo = ?';
-      params.push(modulo);
-    }
-
-    if (dificuldade) {
-      query += ' AND dificuldade = ?';
-      params.push(dificuldade);
-    }
-
-    query += ' ORDER BY RAND() LIMIT ?';
-    params.push(parseInt(limit));
-
-    const [perguntas] = await db.query(query, params);
-
-    // Parse das opções JSON
-    const perguntasComOpcoes = perguntas.map(pergunta => ({
-      ...pergunta,
-      opcoes: typeof pergunta.opcoes_json === 'string' 
-        ? JSON.parse(pergunta.opcoes_json)
-        : pergunta.opcoes_json
+    const perguntasFormatadas = perguntas.map(p => ({
+      id: p.id,
+      pergunta: p.pergunta,
+      opcoes: typeof p.opcoes_json === 'string' ? JSON.parse(p.opcoes_json) : p.opcoes_json,
+      dificuldade: p.dificuldade
     }));
 
-    res.json({
-      success: true,
-      data: perguntasComOpcoes
-    });
-
+    res.json({ success: true, data: perguntasFormatadas });
   } catch (error) {
-    console.error('Erro ao obter perguntas:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
+    res.status(500).json({ success: false, message: 'Erro ao carregar teste' });
   }
 });
 
-// Submeter teste
+// 4. Submeter Teste (Lógica de aprovação de 75%)
 router.post('/teste/submeter', authenticateToken, async (req, res) => {
   try {
-    const { respostas, sessao_id = 1 } = req.body;
+    const { respostas, sessao_id } = req.body;
     const usuario_id = req.user.id;
 
     if (!respostas || !Array.isArray(respostas)) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Respostas não fornecidas' 
-      });
+      return res.status(400).json({ success: false, message: 'Formato de resposta inválido' });
     }
 
-    // Calcular pontuação
     let acertos = 0;
-    const detalhesRespostas = [];
+    const detalhes = [];
 
-    for (const resposta of respostas) {
-      const [pergunta] = await db.query(
-        'SELECT * FROM perguntas_teste WHERE id = ?',
-        [resposta.pergunta_id]
-      );
-
+    for (const r of respostas) {
+      const [pergunta] = await db.query('SELECT resposta_correta FROM perguntas_teste WHERE id = ?', [r.pergunta_id]);
+      
       if (pergunta.length > 0) {
-        const correta = pergunta[0].resposta_correta === resposta.resposta_usuario;
+        const correta = pergunta[0].resposta_correta === r.resposta_usuario;
         if (correta) acertos++;
-
-        detalhesRespostas.push({
-          pergunta_id: resposta.pergunta_id,
-          modulo: pergunta[0].modulo,
-          resposta_usuario: resposta.resposta_usuario,
-          resposta_correta: pergunta[0].resposta_correta,
-          correta: correta
-        });
+        detalhes.push({ pergunta_id: r.pergunta_id, correta });
       }
     }
 
     const pontuacao = (acertos / respostas.length) * 100;
-    const aprovado = pontuacao >= 75; // 75% para aprovação
+    const aprovado = pontuacao >= 75;
 
-    // Salvar resultado
+    // Grava o resultado final
     await db.query(`
-      INSERT INTO resultados_teste 
-      (usuario_id, sessao_id, pontuacao, aprovado, total_perguntas, acertos, detalhes_respostas) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      usuario_id, 
-      sessao_id, 
-      pontuacao, 
-      aprovado, 
-      respostas.length, 
-      acertos, 
-      JSON.stringify(detalhesRespostas)
-    ]);
+      INSERT INTO resultados_teste (usuario_id, sessao_id, pontuacao, aprovado, total_perguntas, acertos)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [usuario_id, sessao_id, pontuacao, aprovado, respostas.length, acertos]);
 
     res.json({
       success: true,
-      data: {
-        pontuacao,
-        aprovado,
-        total_perguntas: respostas.length,
-        acertos,
-        detalhes: detalhesRespostas
-      }
+      data: { aprovado, nota: acertos, total_perguntas: respostas.length, pontuacao }
     });
-
   } catch (error) {
-    console.error('Erro ao submeter teste:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro interno do servidor' 
-    });
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erro ao processar teste' });
   }
 });
 
