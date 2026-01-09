@@ -68,7 +68,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     // Corrigindo o erro de validação IPv6:
     validate: { xForwardedForHeader: false }, 
     handler: (req, res, next, options) => {
