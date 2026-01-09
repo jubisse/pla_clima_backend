@@ -279,18 +279,41 @@ class SessionController {
         }).catch(next);
     }
 
-    static async submitTest(req, res, next) {
-        await withConnection(async (connection) => {
-            const { sessao_id, nota } = req.body;
-            const aprovado = nota >= 70 ? 1 : 0;
-            await connection.execute(
-                `UPDATE participantes_sessao SET teste_realizado = 1, teste_aprovado = ? 
-                 WHERE sessao_id = ? AND usuario_id = ?`,
-                [aprovado, clean(sessao_id), req.user.id]
-            );
-            res.json({ success: true, aprovado: !!aprovado });
-        }).catch(next);
-    }
+  static async submitTest(req, res, next) {
+    await withConnection(async (connection) => {
+        const { sessao_id, respostas } = req.body; // Frontend envia o array de respostas
+        const usuario_id = req.user.id;
+
+        // 1. Buscar as respostas corretas no banco
+        const [perguntas] = await connection.execute(
+            'SELECT id, resposta_correta FROM perguntas_teste WHERE sessao_id = ?', [sessao_id]
+        );
+
+        // 2. Calcular nota
+        let acertos = 0;
+        respostas.forEach(r => {
+            const p = perguntas.find(item => item.id === r.pergunta_id);
+            if (p && p.resposta_correta === r.resposta_usuario) acertos++;
+        });
+
+        const percentual = (acertos / perguntas.length) * 100;
+        const aprovado = percentual >= 70 ? 1 : 0;
+
+        // 3. Atualizar status do participante
+        await connection.execute(
+            `UPDATE participantes_sessao SET teste_realizado = 1, teste_aprovado = ? 
+             WHERE sessao_id = ? AND usuario_id = ?`,
+            [aprovado, sessao_id, usuario_id]
+        );
+
+        res.json({ 
+            success: true, 
+            aprovado: !!aprovado, 
+            acertos, 
+            total: perguntas.length 
+        });
+    }).catch(next);
+}
 }
 
 module.exports = SessionController;
