@@ -143,6 +143,32 @@ class SessionController {
         }).catch(next);
     }
 
+static async getSessionContent(req, res, next) {
+    await withConnection(async (connection) => {
+        const { id } = req.params;
+
+        // 1. Verificar se a sessão existe
+        const [sessoes] = await connection.execute('SELECT id FROM sessions WHERE id = ?', [id]);
+        if (sessoes.length === 0) throw new AppError('Sessão não encontrada', 404);
+
+        // 2. Buscar conteúdos ordenados
+        const [conteudos] = await connection.execute(
+            'SELECT id, titulo, conteudo, tipo, url_video FROM conteudos_treinamento WHERE sessao_id = ? ORDER BY ordem ASC',
+            [id]
+        );
+
+        // 3. Opcional: Aqui poderias cruzar com uma tabela 'progresso_usuario' 
+        // para marcar o campo 'concluido' como true/false. 
+        // Por agora, enviamos concluido: false por padrão.
+        const data = conteudos.map(c => ({ ...c, concluido: false }));
+
+        res.json({
+            success: true,
+            data: data
+        });
+    }).catch(next);
+}
+    
     // 4. Buscar perguntas de uma sessão para o mobile
     static async getSessionQuestions(req, res, next) {
         await withConnection(async (connection) => {
